@@ -19,7 +19,7 @@
 			"purpose": "maskable"
 		},
 		{
-			"src": "/static-assets/splashart.png",
+			"src": "/static-assets/splash.png",
 			"sizes": "300x300",
 			"type": "image/png",
 			"purpose": "any"
