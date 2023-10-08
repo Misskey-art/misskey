@@ -1004,6 +1004,7 @@ export interface Locale {
     "disableFederationConfirm": string;
     "disableFederationConfirmWarn": string;
     "disableFederationOk": string;
+    "contentWarningCheckRule": string;
     "invitationRequiredToRegister": string;
     "emailNotSupported": string;
     "postToTheChannel": string;
@@ -1676,6 +1677,8 @@ export interface Locale {
         "contributors": string;
         "allContributors": string;
         "source": string;
+				"originalSource": string;
+				"ioSource": string;
         "translation": string;
         "donate": string;
         "morePatrons": string;
@@ -2081,6 +2084,7 @@ export interface Locale {
     "_timelines": {
         "home": string;
         "local": string;
+				"media": string;
         "social": string;
         "global": string;
     };

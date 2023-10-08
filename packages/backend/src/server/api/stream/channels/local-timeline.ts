@@ -19,6 +19,7 @@ class LocalTimelineChannel extends Channel {
 	public static requireCredential = false;
 	private withReplies: boolean;
 	private withRenotes: boolean;
+	private withFiles: boolean;
 
 	constructor(
 		private metaService: MetaService,
@@ -39,6 +40,7 @@ class LocalTimelineChannel extends Channel {
 
 		this.withReplies = params.withReplies ?? false;
 		this.withRenotes = params.withRenotes ?? true;
+		this.withFiles = params.withFiles as boolean;
 
 		// Subscribe events
 		this.subscriber.on('notesStream', this.onNote);
@@ -49,6 +51,9 @@ class LocalTimelineChannel extends Channel {
 		if (note.user.host !== null) return;
 		if (note.visibility !== 'public') return;
 		if (note.channelId != null && !this.followingChannels.has(note.channelId)) return;
+
+		// ファイルを含まない投稿は除外
+		if (this.withFiles && (note.files === undefined || note.files.length === 0)) return;
 
 		// リプライなら再pack
 		if (note.replyId != null) {
