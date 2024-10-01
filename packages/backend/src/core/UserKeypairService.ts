@@ -25,7 +25,7 @@ export class UserKeypairService implements OnApplicationShutdown {
 	) {
 		this.cache = new RedisKVCache<MiUserKeypair>(this.redisClient, 'userKeypair', {
 			lifetime: 1000 * 60 * 60 * 24, // 24h
-			memoryCacheLifetime: 1000 * 60 * 60, // 1h
+			memoryCacheLifetime: Infinity,
 			fetcher: (key) => this.userKeypairsRepository.findOneByOrFail({ userId: key }),
 			toRedisConverter: (value) => JSON.stringify(value),
 			fromRedisConverter: (value) => JSON.parse(value),

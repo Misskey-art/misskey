@@ -13,8 +13,29 @@ SPDX-License-Identifier: AGPL-3.0-only
 </div>
 </template>
 
-<script lang="ts">
-export type ChartSrc =
+<script lang="ts" setup>
+/* eslint-disable id-denylist --
+  Chart.js has a `data` attribute in most chart definitions, which triggers the
+  id-denylist violation when setting it. This is causing about 60+ lint issues.
+  As this is part of Chart.js's API it makes sense to disable the check here.
+*/
+import { onMounted, ref, shallowRef, watch } from 'vue';
+import { Chart } from 'chart.js';
+import * as Misskey from 'misskey-js';
+import { misskeyApiGet } from '@/scripts/misskey-api.js';
+import { defaultStore } from '@/store.js';
+import { useChartTooltip } from '@/scripts/use-chart-tooltip.js';
+import { chartVLine } from '@/scripts/chart-vline.js';
+import { alpha } from '@/scripts/color.js';
+import date from '@/filters/date.js';
+import bytes from '@/filters/bytes.js';
+import { initChart } from '@/scripts/init-chart.js';
+import { chartLegend } from '@/scripts/chart-legend.js';
+import MkChartLegend from '@/components/MkChartLegend.vue';
+
+initChart();
+
+type ChartSrc =
 	| 'federation'
 	| 'ap-request'
 	| 'users'
@@ -41,30 +62,7 @@ export type ChartSrc =
 	| 'per-user-pv'
 	| 'per-user-following'
 	| 'per-user-followers'
-	| 'per-user-drive';
-</script>
-
-<script lang="ts" setup>
-/* eslint-disable id-denylist --
-  Chart.js has a `data` attribute in most chart definitions, which triggers the
-  id-denylist violation when setting it. This is causing about 60+ lint issues.
-  As this is part of Chart.js's API it makes sense to disable the check here.
-*/
-import { onMounted, ref, shallowRef, watch } from 'vue';
-import { Chart } from 'chart.js';
-import * as Misskey from 'misskey-js';
-import { misskeyApiGet } from '@/scripts/misskey-api.js';
-import { defaultStore } from '@/store.js';
-import { useChartTooltip } from '@/scripts/use-chart-tooltip.js';
-import { chartVLine } from '@/scripts/chart-vline.js';
-import { alpha } from '@/scripts/color.js';
-import date from '@/filters/date.js';
-import bytes from '@/filters/bytes.js';
-import { initChart } from '@/scripts/init-chart.js';
-import { chartLegend } from '@/scripts/chart-legend.js';
-import MkChartLegend from '@/components/MkChartLegend.vue';
-
-initChart();
+	| 'per-user-drive'
 
 const props = withDefaults(defineProps<{
 	src: ChartSrc;

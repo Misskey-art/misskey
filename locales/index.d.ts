@@ -961,14 +961,6 @@ export interface Locale extends ILocale {
      */
     "mediaSilencedInstancesDescription": string;
     /**
-     * 連合を許可するサーバー
-     */
-    "federationAllowedHosts": string;
-    /**
-     * 連合を許可するサーバーのホストを改行で区切って設定します。
-     */
-    "federationAllowedHostsDescription": string;
-    /**
      * ミュートとブロック
      */
     "muteAndBlock": string;
@@ -1360,10 +1352,6 @@ export interface Locale extends ILocale {
      * ファイルを追加
      */
     "addFile": string;
-    /**
-     * ファイルを表示
-     */
-    "showFile": string;
     /**
      * ドライブは空です
      */
@@ -2069,21 +2057,9 @@ export interface Locale extends ILocale {
      */
     "native": string;
     /**
-     * メニューのスタイル
+     * メニューをドロワーで表示しない
      */
-    "menuStyle": string;
-    /**
-     * スタイル
-     */
-    "style": string;
-    /**
-     * ドロワー
-     */
-    "drawer": string;
-    /**
-     * ポップアップ
-     */
-    "popup": string;
+    "disableDrawer": string;
     /**
      * ノートのアクションをホバー時のみ表示する
      */
@@ -2412,14 +2388,6 @@ export interface Locale extends ILocale {
      * スクラッチパッドは、AiScriptの実験環境を提供します。Misskeyと対話するコードの記述、実行、結果の確認ができます。
      */
     "scratchpadDescription": string;
-    /**
-     * UIインスペクター
-     */
-    "uiInspector": string;
-    /**
-     * メモリ上に存在しているUIコンポーネントのインスタンスの一覧を見ることができます。UIコンポーネントはUi:C:系関数により生成されます。
-     */
-    "uiInspectorDescription": string;
     /**
      * 出力
      */
@@ -2865,7 +2833,7 @@ export interface Locale extends ILocale {
      */
     "reportAbuseOf": ParameterizedString<"name">;
     /**
-     * 通報理由の詳細を記入してください。対象のノートやページなどがある場合はそのURLも記入してください。
+     * 通報理由の詳細を記入してください。対象のノートがある場合はそのURLも記入してください。
      */
     "fillAbuseReportDescription": string;
     /**
@@ -3157,7 +3125,7 @@ export interface Locale extends ILocale {
      */
     "narrow": string;
     /**
-     * 設定はページリロード後に反映されます。
+     * 設定はページリロード後に反映されます。今すぐリロードしますか？
      */
     "reloadToApplySetting": string;
     /**
@@ -5109,54 +5077,6 @@ export interface Locale extends ILocale {
      * 作成したアンテナ
      */
     "createdAntennas": string;
-    /**
-     * {x}から
-     */
-    "fromX": ParameterizedString<"x">;
-    /**
-     * 埋め込みコードを生成
-     */
-    "genEmbedCode": string;
-    /**
-     * このユーザーのノート一覧
-     */
-    "noteOfThisUser": string;
-    /**
-     * これ以上このクリップにノートを追加できません。
-     */
-    "clipNoteLimitExceeded": string;
-    /**
-     * パフォーマンス
-     */
-    "performance": string;
-    /**
-     * 変更あり
-     */
-    "modified": string;
-    /**
-     * 破棄
-     */
-    "discard": string;
-    /**
-     * {n}件の変更があります
-     */
-    "thereAreNChanges": ParameterizedString<"n">;
-    /**
-     * パスキーでログイン
-     */
-    "signinWithPasskey": string;
-    /**
-     * 登録されていないパスキーです。
-     */
-    "unknownWebAuthnKey": string;
-    /**
-     * パスキーの検証に失敗しました。
-     */
-    "passkeyVerificationFailed": string;
-    /**
-     * パスキーの検証に成功しましたが、パスワードレスログインが無効になっています。
-     */
-    "passkeyVerificationSucceededButPasswordlessLoginDisabled": string;
     "_delivery": {
         /**
          * 配信状態
@@ -5648,10 +5568,6 @@ export interface Locale extends ILocale {
          * 有効にすると、タイムラインがキャッシュされていない場合にDBへ追加で問い合わせを行うフォールバック処理を行います。無効にすると、フォールバック処理を行わないことでさらにサーバーの負荷を軽減することができますが、タイムラインが取得できる範囲に制限が生じます。
          */
         "fanoutTimelineDbFallbackDescription": string;
-        /**
-         * 有効にすると、リアクション作成時のパフォーマンスが大幅に向上し、データベースへの負荷を軽減することが可能です。ただし、Redisのメモリ使用量は増加します。
-         */
-        "reactionsBufferingDescription": string;
         /**
          * 問い合わせ先URL
          */
@@ -6831,26 +6747,6 @@ export interface Locale extends ILocale {
              * アイコンデコレーションの最大取付個数
              */
             "avatarDecorationLimit": string;
-            /**
-             * アンテナのインポートを許可
-             */
-            "canImportAntennas": string;
-            /**
-             * ブロックのインポートを許可
-             */
-            "canImportBlocking": string;
-            /**
-             * フォローのインポートを許可
-             */
-            "canImportFollowing": string;
-            /**
-             * ミュートのインポートを許可
-             */
-            "canImportMuting": string;
-            /**
-             * リストのインポートを許可
-             */
-            "canImportUserLists": string;
         };
         "_condition": {
             /**
@@ -8750,18 +8646,6 @@ export interface Locale extends ILocale {
          * 最大{max}つまでデコレーションを付けられます。
          */
         "avatarDecorationMax": ParameterizedString<"max">;
-        /**
-         * フォローされた時のメッセージ
-         */
-        "followedMessage": string;
-        /**
-         * フォローされた時に相手に表示する短いメッセージを設定できます。
-         */
-        "followedMessageDescription": string;
-        /**
-         * フォローを承認制にしている場合、フォローリクエストを許可した時に表示されます。
-         */
-        "followedMessageDescriptionForLockedAccount": string;
     };
     "_exportOrImport": {
         /**
@@ -9123,10 +9007,6 @@ export interface Locale extends ILocale {
          */
         "chooseBlock": string;
         /**
-         * セクションタイトルを入力
-         */
-        "enterSectionTitle": string;
-        /**
          * 種類を選択
          */
         "selectType": string;
@@ -9298,10 +9178,6 @@ export interface Locale extends ILocale {
          * 通知の履歴をリセットする
          */
         "flushNotification": string;
-        /**
-         * {x}のエクスポートが完了しました
-         */
-        "exportOfXCompleted": ParameterizedString<"x">;
         "_types": {
             /**
              * すべて
@@ -9355,14 +9231,6 @@ export interface Locale extends ILocale {
              * 実績の獲得
              */
             "achievementEarned": string;
-            /**
-             * エクスポートが完了した
-             */
-            "exportCompleted": string;
-            /**
-             * 通知のテスト
-             */
-            "test": string;
             /**
              * 連携アプリからの通知
              */
@@ -9610,10 +9478,6 @@ export interface Locale extends ILocale {
          * Webhookを削除しますか？
          */
         "deleteConfirm": string;
-        /**
-         * スイッチの右にあるボタンをクリックするとダミーのデータを使用したテスト用Webhookを送信できます。
-         */
-        "testRemarks": string;
     };
     "_abuseReport": {
         "_notificationRecipient": {
@@ -9836,22 +9700,6 @@ export interface Locale extends ILocale {
          * 通報の通知先を削除
          */
         "deleteAbuseReportNotificationRecipient": string;
-        /**
-         * アカウントを削除
-         */
-        "deleteAccount": string;
-        /**
-         * ページを削除
-         */
-        "deletePage": string;
-        /**
-         * Playを削除
-         */
-        "deleteFlash": string;
-        /**
-         * ギャラリーの投稿を削除
-         */
-        "deleteGalleryPost": string;
     };
     "_fileViewer": {
         /**
@@ -10344,60 +10192,6 @@ export interface Locale extends ILocale {
          * ブラウザのUI
          */
         "native": string;
-    };
-    "_embedCodeGen": {
-        /**
-         * 埋め込みコードをカスタマイズ
-         */
-        "title": string;
-        /**
-         * ヘッダーを表示
-         */
-        "header": string;
-        /**
-         * 自動で続きを読み込む（非推奨）
-         */
-        "autoload": string;
-        /**
-         * 高さの最大値
-         */
-        "maxHeight": string;
-        /**
-         * 0で最大値の設定が無効になります。ウィジェットが縦に伸び続けるのを防ぐために、何らかの値に指定してください。
-         */
-        "maxHeightDescription": string;
-        /**
-         * 高さの最大値制限が無効（0）になっています。これが意図した変更ではない場合は、高さの最大値を何らかの値に設定してください。
-         */
-        "maxHeightWarn": string;
-        /**
-         * プレビュー画面で表示可能な範囲を超えたため、実際に埋め込んだ際とは表示が異なります。
-         */
-        "previewIsNotActual": string;
-        /**
-         * 角丸にする
-         */
-        "rounded": string;
-        /**
-         * 外枠に枠線をつける
-         */
-        "border": string;
-        /**
-         * プレビューに反映
-         */
-        "applyToPreview": string;
-        /**
-         * 埋め込みコードを作成
-         */
-        "generateCode": string;
-        /**
-         * コードが生成されました
-         */
-        "codeGenerated": string;
-        /**
-         * 生成されたコードをウェブサイトに貼り付けてご利用ください。
-         */
-        "codeGeneratedDescription": string;
     };
 }
 declare const locales: {

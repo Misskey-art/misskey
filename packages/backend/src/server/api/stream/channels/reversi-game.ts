@@ -9,10 +9,8 @@ import { DI } from '@/di-symbols.js';
 import { bindThis } from '@/decorators.js';
 import { ReversiService } from '@/core/ReversiService.js';
 import { ReversiGameEntityService } from '@/core/entities/ReversiGameEntityService.js';
-import { isJsonObject } from '@/misc/json-value.js';
 import type { JsonObject, JsonValue } from '@/misc/json-value.js';
 import Channel, { type MiChannelService } from '../channel.js';
-import { reversiUpdateKeys } from 'misskey-js';
 
 class ReversiGameChannel extends Channel {
 	public readonly chName = 'reversiGame';
@@ -46,17 +44,16 @@ class ReversiGameChannel extends Channel {
 				this.ready(body);
 				break;
 			case 'updateSettings':
-				if (!isJsonObject(body)) return;
-				if (!this.reversiService.isValidReversiUpdateKey(body.key)) return;
-				if (!this.reversiService.isValidReversiUpdateValue(body.key, body.value)) return;
-
+				if (typeof body !== 'object' || body === null || Array.isArray(body)) return;
+				if (typeof body.key !== 'string') return;
+				if (typeof body.value !== 'object' || body.value === null || Array.isArray(body.value)) return;
 				this.updateSettings(body.key, body.value);
 				break;
 			case 'cancel':
 				this.cancelGame();
 				break;
 			case 'putStone':
-				if (!isJsonObject(body)) return;
+				if (typeof body !== 'object' || body === null || Array.isArray(body)) return;
 				if (typeof body.pos !== 'number') return;
 				if (typeof body.id !== 'string') return;
 				this.putStone(body.pos, body.id);
@@ -66,7 +63,7 @@ class ReversiGameChannel extends Channel {
 	}
 
 	@bindThis
-	private async updateSettings<K extends typeof reversiUpdateKeys[number]>(key: K, value: MiReversiGame[K]) {
+	private async updateSettings(key: string, value: JsonObject) {
 		if (this.user == null) return;
 
 		this.reversiService.updateSettings(this.gameId!, this.user, key, value);

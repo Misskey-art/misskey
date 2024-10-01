@@ -8,7 +8,7 @@ import promiseLimit from 'promise-limit';
 import { DataSource } from 'typeorm';
 import { ModuleRef } from '@nestjs/core';
 import { DI } from '@/di-symbols.js';
-import type { FollowingsRepository, InstancesRepository, MiMeta, UserProfilesRepository, UserPublickeysRepository, UsersRepository } from '@/models/_.js';
+import type { FollowingsRepository, InstancesRepository, UserProfilesRepository, UserPublickeysRepository, UsersRepository } from '@/models/_.js';
 import type { Config } from '@/config.js';
 import type { MiLocalUser, MiRemoteUser } from '@/models/User.js';
 import { MiUser } from '@/models/User.js';
@@ -35,6 +35,7 @@ import type { UtilityService } from '@/core/UtilityService.js';
 import type { UserEntityService } from '@/core/entities/UserEntityService.js';
 import { bindThis } from '@/decorators.js';
 import { RoleService } from '@/core/RoleService.js';
+import { MetaService } from '@/core/MetaService.js';
 import { DriveFileEntityService } from '@/core/entities/DriveFileEntityService.js';
 import type { AccountMoveService } from '@/core/AccountMoveService.js';
 import { checkHttps } from '@/misc/check-https.js';
@@ -45,9 +46,9 @@ import type { ApNoteService } from './ApNoteService.js';
 import type { ApMfmService } from '../ApMfmService.js';
 import type { ApResolverService, Resolver } from '../ApResolverService.js';
 import type { ApLoggerService } from '../ApLoggerService.js';
-
+// eslint-disable-next-line @typescript-eslint/consistent-type-imports
 import type { ApImageService } from './ApImageService.js';
-import type { IActor, ICollection, IObject, IOrderedCollection } from '../type.js';
+import type { IActor, IObject } from '../type.js';
 
 const nameLength = 128;
 const summaryLength = 2048;
@@ -61,6 +62,7 @@ export class ApPersonService implements OnModuleInit {
 	private driveFileEntityService: DriveFileEntityService;
 	private idService: IdService;
 	private globalEventService: GlobalEventService;
+	private metaService: MetaService;
 	private federatedInstanceService: FederatedInstanceService;
 	private fetchInstanceMetadataService: FetchInstanceMetadataService;
 	private cacheService: CacheService;
@@ -81,9 +83,6 @@ export class ApPersonService implements OnModuleInit {
 
 		@Inject(DI.config)
 		private config: Config,
-
-		@Inject(DI.meta)
-		private meta: MiMeta,
 
 		@Inject(DI.db)
 		private db: DataSource,
@@ -113,6 +112,7 @@ export class ApPersonService implements OnModuleInit {
 		this.driveFileEntityService = this.moduleRef.get('DriveFileEntityService');
 		this.idService = this.moduleRef.get('IdService');
 		this.globalEventService = this.moduleRef.get('GlobalEventService');
+		this.metaService = this.moduleRef.get('MetaService');
 		this.federatedInstanceService = this.moduleRef.get('FederatedInstanceService');
 		this.fetchInstanceMetadataService = this.moduleRef.get('FetchInstanceMetadataService');
 		this.cacheService = this.moduleRef.get('CacheService');
@@ -296,21 +296,6 @@ export class ApPersonService implements OnModuleInit {
 
 		const isBot = getApType(object) === 'Service' || getApType(object) === 'Application';
 
-		const [followingVisibility, followersVisibility] = await Promise.all(
-			[
-				this.isPublicCollection(person.following, resolver),
-				this.isPublicCollection(person.followers, resolver),
-			].map((p): Promise<'public' | 'private'> => p
-				.then(isPublic => isPublic ? 'public' : 'private')
-				.catch(err => {
-					if (!(err instanceof StatusError) || err.isRetryable) {
-						this.logger.error('error occurred while fetching following/followers collection', { stack: err });
-					}
-					return 'private';
-				}),
-			),
-		);
-
 		const bday = person['vcard:bday']?.match(/^\d{4}-\d{2}-\d{2}/);
 
 		const url = getOneApHrefNullable(person.url);
@@ -370,11 +355,8 @@ export class ApPersonService implements OnModuleInit {
 				await transactionalEntityManager.save(new MiUserProfile({
 					userId: user.id,
 					description: _description,
-					followedMessage: person._misskey_followedMessage != null ? truncate(person._misskey_followedMessage, 256) : null,
 					url,
 					fields,
-					followingVisibility,
-					followersVisibility,
 					birthday: bday?.[0] ?? null,
 					location: person['vcard:Address'] ?? null,
 					userHost: host,
@@ -408,10 +390,10 @@ export class ApPersonService implements OnModuleInit {
 		this.cacheService.uriPersonCache.set(user.uri, user);
 
 		// Register host
-		this.federatedInstanceService.fetch(host).then(i => {
+		this.federatedInstanceService.fetch(host).then(async i => {
 			this.instancesRepository.increment({ id: i.id }, 'usersCount', 1);
 			this.fetchInstanceMetadataService.fetchInstanceMetadata(i);
-			if (this.meta.enableChartsForFederatedInstances) {
+			if ((await this.metaService.fetch()).enableChartsForFederatedInstances) {
 				this.instanceChart.newUser(i.host);
 			}
 		});
@@ -482,23 +464,6 @@ export class ApPersonService implements OnModuleInit {
 
 		const tags = extractApHashtags(person.tag).map(normalizeForSearch).splice(0, 32);
 
-		const [followingVisibility, followersVisibility] = await Promise.all(
-			[
-				this.isPublicCollection(person.following, resolver),
-				this.isPublicCollection(person.followers, resolver),
-			].map((p): Promise<'public' | 'private' | undefined> => p
-				.then(isPublic => isPublic ? 'public' : 'private')
-				.catch(err => {
-					if (!(err instanceof StatusError) || err.isRetryable) {
-						this.logger.error('error occurred while fetching following/followers collection', { stack: err });
-						// Do not update the visibiility on transient errors.
-						return undefined;
-					}
-					return 'private';
-				}),
-			),
-		);
-
 		const bday = person['vcard:bday']?.match(/^\d{4}-\d{2}-\d{2}/);
 
 		const url = getOneApHrefNullable(person.url);
@@ -567,9 +532,6 @@ export class ApPersonService implements OnModuleInit {
 			url,
 			fields,
 			description: _description,
-			followedMessage: person._misskey_followedMessage != null ? truncate(person._misskey_followedMessage, 256) : null,
-			followingVisibility,
-			followersVisibility,
 			birthday: bday?.[0] ?? null,
 			location: person['vcard:Address'] ?? null,
 		});
@@ -740,17 +702,5 @@ export class ApPersonService implements OnModuleInit {
 		await this.accountMoveService.postMoveProcess(src, dst);
 
 		return 'ok';
-	}
-
-	@bindThis
-	private async isPublicCollection(collection: string | ICollection | IOrderedCollection | undefined, resolver: Resolver): Promise<boolean> {
-		if (collection) {
-			const resolved = await resolver.resolveCollection(collection);
-			if (resolved.first || (resolved as ICollection).items || (resolved as IOrderedCollection).orderedItems) {
-				return true;
-			}
-		}
-
-		return false;
 	}
 }

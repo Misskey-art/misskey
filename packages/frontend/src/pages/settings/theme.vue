@@ -88,8 +88,18 @@ import { uniqueBy } from '@/scripts/array.js';
 import { fetchThemes, getThemes } from '@/theme-store.js';
 import { definePageMetadata } from '@/scripts/page-metadata.js';
 import { miLocalStorage } from '@/local-storage.js';
-import { reloadAsk } from '@/scripts/reload-ask.js';
+import { unisonReload } from '@/scripts/unison-reload.js';
 import * as os from '@/os.js';
+
+async function reloadAsk() {
+	const { canceled } = await os.confirm({
+		type: 'info',
+		text: i18n.ts.reloadToApplySetting,
+	});
+	if (canceled) return;
+
+	unisonReload();
+}
 
 const installedThemes = ref(getThemes());
 const builtinThemes = getBuiltinThemesRef();
@@ -138,13 +148,13 @@ watch(syncDeviceDarkMode, () => {
 	}
 });
 
-watch(wallpaper, async () => {
+watch(wallpaper, () => {
 	if (wallpaper.value == null) {
 		miLocalStorage.removeItem('wallpaper');
 	} else {
 		miLocalStorage.setItem('wallpaper', wallpaper.value);
 	}
-	await reloadAsk({ reason: i18n.ts.reloadToApplySetting, unison: true });
+	reloadAsk();
 });
 
 onActivated(() => {

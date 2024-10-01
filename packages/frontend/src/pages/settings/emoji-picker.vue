@@ -113,13 +113,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<option :value="4">{{ i18n.ts.large }}+</option>
 			</MkRadios>
 
-			<MkSelect v-model="emojiPickerStyle">
-				<template #label>{{ i18n.ts.style }}</template>
+			<MkSwitch v-model="emojiPickerUseDrawerForMobile">
+				{{ i18n.ts.useDrawerReactionPickerForMobile }}
 				<template #caption>{{ i18n.ts.needReloadToApply }}</template>
-				<option value="auto">{{ i18n.ts.auto }}</option>
-				<option value="popup">{{ i18n.ts.popup }}</option>
-				<option value="drawer">{{ i18n.ts.drawer }}</option>
-			</MkSelect>
+			</MkSwitch>
 		</div>
 	</FormSection>
 </div>
@@ -131,7 +128,7 @@ import Sortable from 'vuedraggable';
 import MkRadios from '@/components/MkRadios.vue';
 import MkButton from '@/components/MkButton.vue';
 import FormSection from '@/components/form/section.vue';
-import MkSelect from '@/components/MkSelect.vue';
+import MkSwitch from '@/components/MkSwitch.vue';
 import * as os from '@/os.js';
 import { defaultStore } from '@/store.js';
 import { i18n } from '@/i18n.js';
@@ -149,7 +146,7 @@ const pinnedEmojis: Ref<string[]> = ref(deepClone(defaultStore.state.pinnedEmoji
 const emojiPickerScale = computed(defaultStore.makeGetterSetter('emojiPickerScale'));
 const emojiPickerWidth = computed(defaultStore.makeGetterSetter('emojiPickerWidth'));
 const emojiPickerHeight = computed(defaultStore.makeGetterSetter('emojiPickerHeight'));
-const emojiPickerStyle = computed(defaultStore.makeGetterSetter('emojiPickerStyle'));
+const emojiPickerUseDrawerForMobile = computed(defaultStore.makeGetterSetter('emojiPickerUseDrawerForMobile'));
 
 const removeReaction = (reaction: string, ev: MouseEvent) => remove(pinnedEmojisForReaction, reaction, ev);
 const chooseReaction = (ev: MouseEvent) => pickEmoji(pinnedEmojisForReaction, ev);

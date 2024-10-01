@@ -107,9 +107,9 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			const gotPubCount = topPubInstances.map(x => x.followingCount).reduce((a, b) => a + b, 0);
 
 			return await awaitAll({
-				topSubInstances: this.instanceEntityService.packMany(topSubInstances, me),
+				topSubInstances: this.instanceEntityService.packMany(topSubInstances),
 				otherFollowersCount: Math.max(0, allSubCount - gotSubCount),
-				topPubInstances: this.instanceEntityService.packMany(topPubInstances, me),
+				topPubInstances: this.instanceEntityService.packMany(topPubInstances),
 				otherFollowingCount: Math.max(0, allPubCount - gotPubCount),
 			});
 		});

@@ -20,10 +20,10 @@ import { CoreModule } from '@/core/CoreModule.js';
 import { FederatedInstanceService } from '@/core/FederatedInstanceService.js';
 import { LoggerService } from '@/core/LoggerService.js';
 import type { IActor, IApDocument, ICollection, IObject, IPost } from '@/core/activitypub/type.js';
-import { MiMeta, MiNote, UserProfilesRepository } from '@/models/_.js';
-import { DI } from '@/di-symbols.js';
+import { MiMeta, MiNote } from '@/models/_.js';
 import { secureRndstr } from '@/misc/secure-rndstr.js';
 import { DownloadService } from '@/core/DownloadService.js';
+import { MetaService } from '@/core/MetaService.js';
 import type { MiRemoteUser } from '@/models/User.js';
 import { genAidx } from '@/misc/id/aidx.js';
 import { MockResolver } from '../misc/mock-resolver.js';
@@ -86,7 +86,6 @@ async function createRandomRemoteUser(
 }
 
 describe('ActivityPub', () => {
-	let userProfilesRepository: UserProfilesRepository;
 	let imageService: ApImageService;
 	let noteService: ApNoteService;
 	let personService: ApPersonService;
@@ -106,14 +105,7 @@ describe('ActivityPub', () => {
 		sensitiveWords: [] as string[],
 		prohibitedWords: [] as string[],
 	} as MiMeta;
-	const meta = { ...metaInitial };
-
-	function updateMeta(newMeta: Partial<MiMeta>): void {
-		for (const key in meta) {
-			delete (meta as any)[key];
-		}
-		Object.assign(meta, newMeta);
-	}
+	let meta = metaInitial;
 
 	beforeAll(async () => {
 		const app = await Test.createTestingModule({
@@ -126,13 +118,14 @@ describe('ActivityPub', () => {
 					};
 				},
 			})
-			.overrideProvider(DI.meta).useFactory({ factory: () => meta })
-			.compile();
+			.overrideProvider(MetaService).useValue({
+				async fetch(): Promise<MiMeta> {
+					return meta;
+				},
+			}).compile();
 
 		await app.init();
 		app.enableShutdownHooks();
-
-		userProfilesRepository = app.get(DI.userProfilesRepository);
 
 		noteService = app.get<ApNoteService>(ApNoteService);
 		personService = app.get<ApPersonService>(ApPersonService);
@@ -209,53 +202,6 @@ describe('ActivityPub', () => {
 			const user = await personService.createPerson(actor.id, resolver);
 
 			assert.strictEqual(user.name, null);
-		});
-	});
-
-	describe('Collection visibility', () => {
-		test('Public following/followers', async () => {
-			const actor = createRandomActor();
-			actor.following = {
-				id: `${actor.id}/following`,
-				type: 'OrderedCollection',
-				totalItems: 0,
-				first: `${actor.id}/following?page=1`,
-			};
-			actor.followers = `${actor.id}/followers`;
-
-			resolver.register(actor.id, actor);
-			resolver.register(actor.followers, {
-				id: actor.followers,
-				type: 'OrderedCollection',
-				totalItems: 0,
-				first: `${actor.followers}?page=1`,
-			});
-
-			const user = await personService.createPerson(actor.id, resolver);
-			const userProfile = await userProfilesRepository.findOneByOrFail({ userId: user.id });
-
-			assert.deepStrictEqual(userProfile.followingVisibility, 'public');
-			assert.deepStrictEqual(userProfile.followersVisibility, 'public');
-		});
-
-		test('Private following/followers', async () => {
-			const actor = createRandomActor();
-			actor.following = {
-				id: `${actor.id}/following`,
-				type: 'OrderedCollection',
-				totalItems: 0,
-				// first: …
-			};
-			actor.followers = `${actor.id}/followers`;
-
-			resolver.register(actor.id, actor);
-			//resolver.register(actor.followers, { … });
-
-			const user = await personService.createPerson(actor.id, resolver);
-			const userProfile = await userProfilesRepository.findOneByOrFail({ userId: user.id });
-
-			assert.deepStrictEqual(userProfile.followingVisibility, 'private');
-			assert.deepStrictEqual(userProfile.followersVisibility, 'private');
 		});
 	});
 
@@ -370,7 +316,7 @@ describe('ActivityPub', () => {
 		});
 
 		test('cacheRemoteFiles=false disables caching', async () => {
-			updateMeta({ ...metaInitial, cacheRemoteFiles: false });
+			meta = { ...metaInitial, cacheRemoteFiles: false };
 
 			const imageObject: IApDocument = {
 				type: 'Document',
@@ -399,7 +345,7 @@ describe('ActivityPub', () => {
 		});
 
 		test('cacheRemoteSensitiveFiles=false only affects sensitive files', async () => {
-			updateMeta({ ...metaInitial, cacheRemoteSensitiveFiles: false });
+			meta = { ...metaInitial, cacheRemoteSensitiveFiles: false };
 
 			const imageObject: IApDocument = {
 				type: 'Document',

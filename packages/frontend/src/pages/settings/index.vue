@@ -198,6 +198,9 @@ const menuDef = computed(() => [{
 	}],
 }]);
 
+watch(narrow, () => {
+});
+
 onMounted(() => {
 	ro.observe(el.value);
 

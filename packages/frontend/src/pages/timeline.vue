@@ -34,13 +34,13 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts" setup>
-import { computed, watch, provide, shallowRef, ref, onMounted, onActivated } from 'vue';
+import { computed, watch, provide, shallowRef, ref } from 'vue';
 import type { Tab } from '@/components/global/MkPageHeader.tabs.vue';
 import MkTimeline from '@/components/MkTimeline.vue';
 import MkInfo from '@/components/MkInfo.vue';
 import MkPostForm from '@/components/MkPostForm.vue';
 import MkHorizontalSwipe from '@/components/MkHorizontalSwipe.vue';
-import { scroll } from '@@/js/scroll.js';
+import { scroll } from '@/scripts/scroll.js';
 import * as os from '@/os.js';
 import { misskeyApi } from '@/scripts/misskey-api.js';
 import { defaultStore } from '@/store.js';
@@ -50,21 +50,18 @@ import { definePageMetadata } from '@/scripts/page-metadata.js';
 import { antennasCache, userListsCache, favoritedChannelsCache } from '@/cache.js';
 import { deviceKind } from '@/scripts/device-kind.js';
 import { deepMerge } from '@/scripts/merge.js';
-import type { MenuItem } from '@/types/menu.js';
+import { MenuItem } from '@/types/menu.js';
 import { miLocalStorage } from '@/local-storage.js';
 import { availableBasicTimelines, hasWithReplies, isAvailableBasicTimeline, isBasicTimeline, basicTimelineIconClass } from '@/timelines.js';
-import type { BasicTimelineType } from '@/timelines.js';
 
 provide('shouldOmitHeaderTitle', true);
 
 const tlComponent = shallowRef<InstanceType<typeof MkTimeline>>();
 const rootEl = shallowRef<HTMLElement>();
 
-type TimelinePageSrc = BasicTimelineType | `list:${string}`;
-
 const queue = ref(0);
 const srcWhenNotSignin = ref<'local' | 'global'>(isAvailableBasicTimeline('local') ? 'local' : 'global');
-const src = computed<TimelinePageSrc>({
+const src = computed<'home' | 'local' | 'social' | 'global' | `list:${string}`>({
 	get: () => ($i ? defaultStore.reactiveState.tl.value.src : srcWhenNotSignin.value),
 	set: (x) => saveSrc(x),
 });
@@ -189,7 +186,7 @@ async function chooseChannel(ev: MouseEvent): Promise<void> {
 		}),
 		(channels.length === 0 ? undefined : { type: 'divider' }),
 		{
-			type: 'link',
+			type: 'link' as const,
 			icon: 'ti ti-plus',
 			text: i18n.ts.createNew,
 			to: '/channels',
@@ -198,7 +195,7 @@ async function chooseChannel(ev: MouseEvent): Promise<void> {
 	os.popupMenu(items, ev.currentTarget ?? ev.target);
 }
 
-function saveSrc(newSrc: TimelinePageSrc): void {
+function saveSrc(newSrc: 'home' | 'local' | 'social' | 'global' | `list:${string}`): void {
 	const out = deepMerge({ src: newSrc }, defaultStore.state.tl);
 
 	if (newSrc.startsWith('userList:')) {
@@ -239,43 +236,22 @@ function closeTutorial(): void {
 	defaultStore.set('timelineTutorials', before);
 }
 
-function switchTlIfNeeded() {
-	if (isBasicTimeline(src.value) && !isAvailableBasicTimeline(src.value)) {
-		src.value = availableBasicTimelines()[0];
-	}
-}
-
-onMounted(() => {
-	switchTlIfNeeded();
-});
-onActivated(() => {
-	switchTlIfNeeded();
-});
-
 const headerActions = computed(() => {
 	const tmp = [
 		{
 			icon: 'ti ti-dots',
 			text: i18n.ts.options,
 			handler: (ev) => {
-				const menuItems: MenuItem[] = [];
-
-				menuItems.push({
+				os.popupMenu([{
 					type: 'switch',
 					text: i18n.ts.showRenotes,
 					ref: withRenotes,
-				});
-
-				if (isBasicTimeline(src.value) && hasWithReplies(src.value)) {
-					menuItems.push({
-						type: 'switch',
-						text: i18n.ts.showRepliesToOthersInTimeline,
-						ref: withReplies,
-						disabled: onlyFiles,
-					});
-				}
-
-				menuItems.push({
+				}, isBasicTimeline(src.value) && hasWithReplies(src.value) ? {
+					type: 'switch',
+					text: i18n.ts.showRepliesToOthersInTimeline,
+					ref: withReplies,
+					disabled: onlyFiles,
+				} : undefined, {
 					type: 'switch',
 					text: i18n.ts.withSensitive,
 					ref: withSensitive,
@@ -284,9 +260,7 @@ const headerActions = computed(() => {
 					text: i18n.ts.fileAttachedOnly,
 					ref: onlyFiles,
 					disabled: isBasicTimeline(src.value) && hasWithReplies(src.value) ? withReplies : false,
-				});
-
-				os.popupMenu(menuItems, ev.currentTarget ?? ev.target);
+				}], ev.currentTarget ?? ev.target);
 			},
 		},
 	];

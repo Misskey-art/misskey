@@ -7,7 +7,7 @@ import { defineAsyncComponent } from 'vue';
 import type { MenuItem } from '@/types/menu.js';
 import * as os from '@/os.js';
 import { instance } from '@/instance.js';
-import { host } from '@@/js/config.js';
+import { host } from '@/config.js';
 import { i18n } from '@/i18n.js';
 import { $i } from '@/account.js';
 
@@ -41,9 +41,7 @@ function toolsMenuItems(): MenuItem[] {
 }
 
 export function openInstanceMenu(ev: MouseEvent) {
-	const menuItems: MenuItem[] = [];
-
-	menuItems.push({
+	os.popupMenu([{
 		text: instance.name ?? host,
 		type: 'label',
 	}, {
@@ -71,18 +69,12 @@ export function openInstanceMenu(ev: MouseEvent) {
 		text: i18n.ts.ads,
 		icon: 'ti ti-ad',
 		to: '/ads',
-	});
-
-	if ($i && ($i.isAdmin || $i.policies.canInvite) && instance.disableRegistration) {
-		menuItems.push({
-			type: 'link',
-			to: '/invite',
-			text: i18n.ts.invite,
-			icon: 'ti ti-user-plus',
-		});
-	}
-
-	menuItems.push({
+	}, ($i && ($i.isAdmin || $i.policies.canInvite) && instance.disableRegistration) ? {
+		type: 'link',
+		to: '/invite',
+		text: i18n.ts.invite,
+		icon: 'ti ti-user-plus',
+	} : undefined, {
 		type: 'parent',
 		text: i18n.ts.tools,
 		icon: 'ti ti-tool',
@@ -123,27 +115,19 @@ export function openInstanceMenu(ev: MouseEvent) {
 		icon: 'ti ti-bulb',
 		href: 'https://misskey-hub.net/docs/for-users/',
 		target: '_blank',
-	});
-
-	if ($i) {
-		menuItems.push({
-			text: i18n.ts._initialTutorial.launchTutorial,
-			icon: 'ti ti-presentation',
-			action: () => {
-				const { dispose } = os.popup(defineAsyncComponent(() => import('@/components/MkTutorialDialog.vue')), {}, {
-					closed: () => dispose(),
-				});
-			},
-		});
-	}
-
-	menuItems.push({
+	}, ($i) ? {
+		text: i18n.ts._initialTutorial.launchTutorial,
+		icon: 'ti ti-presentation',
+		action: () => {
+			const { dispose } = os.popup(defineAsyncComponent(() => import('@/components/MkTutorialDialog.vue')), {}, {
+				closed: () => dispose(),
+			});
+		},
+	} : undefined, {
 		type: 'link',
 		text: i18n.ts.aboutMisskey,
 		to: '/about-misskey',
-	});
-
-	os.popupMenu(menuItems, ev.currentTarget ?? ev.target, {
+	}], ev.currentTarget ?? ev.target, {
 		align: 'left',
 	});
 }

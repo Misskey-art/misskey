@@ -172,7 +172,9 @@ async function show() {
 const menuShowing = ref(false);
 
 function showMenu(ev: MouseEvent) {
-	const menu: MenuItem[] = [
+	let menu: MenuItem[] = [];
+
+	menu = [
 		// TODO: 再生キューに追加
 		{
 			type: 'switch',
@@ -220,7 +222,7 @@ function showMenu(ev: MouseEvent) {
 		menu.push({
 			type: 'divider',
 		}, {
-			type: 'link',
+			type: 'link' as const,
 			text: i18n.ts._fileViewer.title,
 			icon: 'ti ti-info-circle',
 			to: `/my/drive/file/${props.audio.id}`,

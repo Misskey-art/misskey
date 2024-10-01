@@ -117,6 +117,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 <script lang="ts" setup>
 import { ref, shallowRef, computed, watch, onMounted } from 'vue';
 import * as Misskey from 'misskey-js';
+import XSection from '@/components/MkEmojiPicker.section.vue';
 import {
 	emojilist,
 	emojiCharByCategory,
@@ -125,8 +126,7 @@ import {
 	getEmojiName,
 	CustomEmojiFolderTree,
 	getUnicodeEmoji,
-} from '@@/js/emojilist.js';
-import XSection from '@/components/MkEmojiPicker.section.vue';
+} from '@/scripts/emojilist.js';
 import MkRippleEffect from '@/components/MkRippleEffect.vue';
 import * as os from '@/os.js';
 import { isTouchUsing } from '@/scripts/touch.js';
@@ -611,7 +611,6 @@ defineExpose({
 						width: auto;
 						height: auto;
 						min-width: 0;
-						padding: 0;
 
 						&:disabled {
 							cursor: not-allowed;
@@ -718,7 +717,7 @@ defineExpose({
 
 				> .item {
 					position: relative;
-					padding: 0 3px;
+					padding: 0;
 					width: var(--eachSize);
 					height: var(--eachSize);
 					contain: strict;

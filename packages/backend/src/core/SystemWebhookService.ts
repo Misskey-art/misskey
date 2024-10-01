@@ -54,7 +54,7 @@ export class SystemWebhookService implements OnApplicationShutdown {
 	 * SystemWebhook の一覧を取得する.
 	 */
 	@bindThis
-	public fetchSystemWebhooks(params?: {
+	public async fetchSystemWebhooks(params?: {
 		ids?: MiSystemWebhook['id'][];
 		isActive?: MiSystemWebhook['isActive'];
 		on?: MiSystemWebhook['on'];
@@ -165,24 +165,19 @@ export class SystemWebhookService implements OnApplicationShutdown {
 	/**
 	 * SystemWebhook をWebhook配送キューに追加する
 	 * @see QueueService.systemWebhookDeliver
-	 * // TODO: contentの型を厳格化する
 	 */
 	@bindThis
-	public async enqueueSystemWebhook<T extends SystemWebhookEventType>(
-		webhook: MiSystemWebhook | MiSystemWebhook['id'],
-		type: T,
-		content: unknown,
-	) {
+	public async enqueueSystemWebhook(webhook: MiSystemWebhook | MiSystemWebhook['id'], type: SystemWebhookEventType, content: unknown) {
 		const webhookEntity = typeof webhook === 'string'
 			? (await this.fetchActiveSystemWebhooks()).find(a => a.id === webhook)
 			: webhook;
 		if (!webhookEntity || !webhookEntity.isActive) {
-			this.logger.info(`SystemWebhook is not active or not found : ${webhook}`);
+			this.logger.info(`Webhook is not active or not found : ${webhook}`);
 			return;
 		}
 
 		if (!webhookEntity.on.includes(type)) {
-			this.logger.info(`SystemWebhook ${webhookEntity.id} is not listening to ${type}`);
+			this.logger.info(`Webhook ${webhookEntity.id} is not listening to ${type}`);
 			return;
 		}
 

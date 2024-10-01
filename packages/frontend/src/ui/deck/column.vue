@@ -46,7 +46,7 @@ import { onBeforeUnmount, onMounted, provide, watch, shallowRef, ref, computed }
 import { updateColumn, swapLeftColumn, swapRightColumn, swapUpColumn, swapDownColumn, stackLeftColumn, popRightColumn, removeColumn, swapColumn, Column } from './deck-store.js';
 import * as os from '@/os.js';
 import { i18n } from '@/i18n.js';
-import type { MenuItem } from '@/types/menu.js';
+import { MenuItem } from '@/types/menu.js';
 
 provide('shouldHeaderThin', true);
 provide('shouldOmitHeaderTitle', true);
@@ -104,27 +104,7 @@ function toggleActive() {
 }
 
 function getMenu() {
-	const menuItems: MenuItem[] = [];
-
-	if (props.menu) {
-		menuItems.push(...props.menu, {
-			type: 'divider',
-		});
-	}
-
-	if (props.refresher) {
-		menuItems.push({
-			icon: 'ti ti-refresh',
-			text: i18n.ts.reload,
-			action: () => {
-				if (props.refresher) {
-					props.refresher();
-				}
-			},
-		});
-	}
-
-	menuItems.push({
+	let items: MenuItem[] = [{
 		icon: 'ti ti-settings',
 		text: i18n.ts._deck.configureColumn,
 		action: async () => {
@@ -149,73 +129,74 @@ function getMenu() {
 			if (canceled) return;
 			updateColumn(props.column.id, result);
 		},
-	});
-
-	const moveToMenuItems: MenuItem[] = [];
-
-	moveToMenuItems.push({
-		icon: 'ti ti-arrow-left',
-		text: i18n.ts._deck.swapLeft,
-		action: () => {
-			swapLeftColumn(props.column.id);
-		},
 	}, {
-		icon: 'ti ti-arrow-right',
-		text: i18n.ts._deck.swapRight,
-		action: () => {
-			swapRightColumn(props.column.id);
-		},
-	});
-
-	if (props.isStacked) {
-		moveToMenuItems.push({
+		type: 'parent',
+		text: i18n.ts.move + '...',
+		icon: 'ti ti-arrows-move',
+		children: [{
+			icon: 'ti ti-arrow-left',
+			text: i18n.ts._deck.swapLeft,
+			action: () => {
+				swapLeftColumn(props.column.id);
+			},
+		}, {
+			icon: 'ti ti-arrow-right',
+			text: i18n.ts._deck.swapRight,
+			action: () => {
+				swapRightColumn(props.column.id);
+			},
+		}, props.isStacked ? {
 			icon: 'ti ti-arrow-up',
 			text: i18n.ts._deck.swapUp,
 			action: () => {
 				swapUpColumn(props.column.id);
 			},
-		}, {
+		} : undefined, props.isStacked ? {
 			icon: 'ti ti-arrow-down',
 			text: i18n.ts._deck.swapDown,
 			action: () => {
 				swapDownColumn(props.column.id);
 			},
-		});
-	}
-
-	menuItems.push({
-		type: 'parent',
-		text: i18n.ts.move + '...',
-		icon: 'ti ti-arrows-move',
-		children: moveToMenuItems,
+		} : undefined],
 	}, {
 		icon: 'ti ti-stack-2',
 		text: i18n.ts._deck.stackLeft,
 		action: () => {
 			stackLeftColumn(props.column.id);
 		},
-	});
-
-	if (props.isStacked) {
-		menuItems.push({
-			icon: 'ti ti-window-maximize',
-			text: i18n.ts._deck.popRight,
-			action: () => {
-				popRightColumn(props.column.id);
-			},
-		});
-	}
-
-	menuItems.push({ type: 'divider' }, {
+	}, props.isStacked ? {
+		icon: 'ti ti-window-maximize',
+		text: i18n.ts._deck.popRight,
+		action: () => {
+			popRightColumn(props.column.id);
+		},
+	} : undefined, { type: 'divider' }, {
 		icon: 'ti ti-trash',
 		text: i18n.ts.remove,
 		danger: true,
 		action: () => {
 			removeColumn(props.column.id);
 		},
-	});
+	}];
 
-	return menuItems;
+	if (props.menu) {
+		items.unshift({ type: 'divider' });
+		items = props.menu.concat(items);
+	}
+
+	if (props.refresher) {
+		items = [{
+			icon: 'ti ti-refresh',
+			text: i18n.ts.reload,
+			action: () => {
+				if (props.refresher) {
+					props.refresher();
+				}
+			},
+		}, ...items];
+	}
+
+	return items;
 }
 
 function showSettingsMenu(ev: MouseEvent) {
@@ -343,11 +324,11 @@ function onDrop(ev) {
 
 		> .body {
 			background: transparent !important;
-			scrollbar-color: var(--scrollbarHandle) transparent;
 
 			&::-webkit-scrollbar-track {
 				background: transparent;
 			}
+			scrollbar-color: var(--scrollbarHandle) transparent;
 		}
 	}
 
@@ -357,11 +338,11 @@ function onDrop(ev) {
 		> .body {
 			background: var(--bg) !important;
 			overflow-y: scroll !important;
-			scrollbar-color: var(--scrollbarHandle) transparent;
 
 			&::-webkit-scrollbar-track {
 				background: inherit;
 			}
+			scrollbar-color: var(--scrollbarHandle) transparent;
 		}
 	}
 }
@@ -442,10 +423,10 @@ function onDrop(ev) {
 	box-sizing: border-box;
 	container-type: size;
 	background-color: var(--bg);
-	scrollbar-color: var(--scrollbarHandle) var(--panel);
 
 	&::-webkit-scrollbar-track {
 		background: var(--panel);
 	}
+	scrollbar-color: var(--scrollbarHandle) var(--panel);
 }
 </style>

@@ -9,7 +9,7 @@ import { i18n } from '@/i18n.js';
 import { copyToClipboard } from '@/scripts/copy-to-clipboard.js';
 import * as os from '@/os.js';
 import { misskeyApi } from '@/scripts/misskey-api.js';
-import type { MenuItem } from '@/types/menu.js';
+import { MenuItem } from '@/types/menu.js';
 import { defaultStore } from '@/store.js';
 
 function rename(file: Misskey.entities.DriveFile) {
@@ -87,10 +87,8 @@ async function deleteFile(file: Misskey.entities.DriveFile) {
 
 export function getDriveFileMenu(file: Misskey.entities.DriveFile, folder?: Misskey.entities.DriveFolder | null): MenuItem[] {
 	const isImage = file.type.startsWith('image/');
-
-	const menuItems: MenuItem[] = [];
-
-	menuItems.push({
+	let menu;
+	menu = [{
 		type: 'link',
 		to: `/my/drive/file/${file.id}`,
 		text: i18n.ts._fileViewer.title,
@@ -111,20 +109,14 @@ export function getDriveFileMenu(file: Misskey.entities.DriveFile, folder?: Miss
 		text: i18n.ts.describeFile,
 		icon: 'ti ti-text-caption',
 		action: () => describe(file),
-	});
-
-	if (isImage) {
-		menuItems.push({
-			text: i18n.ts.cropImage,
-			icon: 'ti ti-crop',
-			action: () => os.cropImage(file, {
-				aspectRatio: NaN,
-				uploadFolder: folder ? folder.id : folder,
-			}),
-		});
-	}
-
-	menuItems.push({ type: 'divider' }, {
+	}, ...isImage ? [{
+		text: i18n.ts.cropImage,
+		icon: 'ti ti-crop',
+		action: () => os.cropImage(file, {
+			aspectRatio: NaN,
+			uploadFolder: folder ? folder.id : folder,
+		}),
+	}] : [], { type: 'divider' }, {
 		text: i18n.ts.createNoteFromTheFile,
 		icon: 'ti ti-pencil',
 		action: () => os.post({
@@ -146,17 +138,17 @@ export function getDriveFileMenu(file: Misskey.entities.DriveFile, folder?: Miss
 		icon: 'ti ti-trash',
 		danger: true,
 		action: () => deleteFile(file),
-	});
+	}];
 
 	if (defaultStore.state.devMode) {
-		menuItems.push({ type: 'divider' }, {
+		menu = menu.concat([{ type: 'divider' }, {
 			icon: 'ti ti-id',
 			text: i18n.ts.copyFileId,
 			action: () => {
 				copyToClipboard(file.id);
 			},
-		});
+		}]);
 	}
 
-	return menuItems;
+	return menu;
 }

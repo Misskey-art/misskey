@@ -171,11 +171,11 @@ function onMousedown(evt: MouseEvent): void {
 		background: var(--accent);
 
 		&:not(:disabled):hover {
-			background: hsl(from var(--accent) h s calc(l + 5));
+			background: var(--X8);
 		}
 
 		&:not(:disabled):active {
-			background: hsl(from var(--accent) h s calc(l + 5));
+			background: var(--X8);
 		}
 	}
 
@@ -220,16 +220,15 @@ function onMousedown(evt: MouseEvent): void {
 		background: linear-gradient(90deg, var(--buttonGradateA), var(--buttonGradateB));
 
 		&:not(:disabled):hover {
-			background: linear-gradient(90deg, hsl(from var(--accent) h s calc(l + 5)), hsl(from var(--accent) h s calc(l + 5)));
+			background: linear-gradient(90deg, var(--X8), var(--X8));
 		}
 
 		&:not(:disabled):active {
-			background: linear-gradient(90deg, hsl(from var(--accent) h s calc(l + 5)), hsl(from var(--accent) h s calc(l + 5)));
+			background: linear-gradient(90deg, var(--X8), var(--X8));
 		}
 	}
 
 	&.danger {
-		font-weight: bold;
 		color: #ff2a2a;
 
 		&.primary {
@@ -247,7 +246,7 @@ function onMousedown(evt: MouseEvent): void {
 	}
 
 	&:disabled {
-		opacity: 0.5;
+		opacity: 0.7;
 	}
 
 	&:focus-visible {

@@ -239,7 +239,7 @@ export class MfmService {
 			return null;
 		}
 
-		const { happyDOM, window } = new Window();
+		const { window } = new Window();
 
 		const doc = window.document;
 
@@ -457,10 +457,6 @@ export class MfmService {
 
 		appendChildren(nodes, body);
 
-		const serialized = new XMLSerializer().serializeToString(body);
-
-		happyDOM.close().catch(err => {});
-
-		return serialized;
+		return new XMLSerializer().serializeToString(body);
 	}
 }

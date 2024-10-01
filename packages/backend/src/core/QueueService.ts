@@ -87,12 +87,6 @@ export class QueueService {
 			repeat: { pattern: '*/5 * * * *' },
 			removeOnComplete: true,
 		});
-
-		this.systemQueue.add('bakeBufferedReactions', {
-		}, {
-			repeat: { pattern: '0 0 * * *' },
-			removeOnComplete: true,
-		});
 	}
 
 	@bindThis
@@ -458,15 +452,10 @@ export class QueueService {
 
 	/**
 	 * @see UserWebhookDeliverJobData
-	 * @see UserWebhookDeliverProcessorService
+	 * @see WebhookDeliverProcessorService
 	 */
 	@bindThis
-	public userWebhookDeliver(
-		webhook: MiWebhook,
-		type: typeof webhookEventTypes[number],
-		content: unknown,
-		opts?: { attempts?: number },
-	) {
+	public userWebhookDeliver(webhook: MiWebhook, type: typeof webhookEventTypes[number], content: unknown) {
 		const data: UserWebhookDeliverJobData = {
 			type,
 			content,
@@ -479,7 +468,7 @@ export class QueueService {
 		};
 
 		return this.userWebhookDeliverQueue.add(webhook.id, data, {
-			attempts: opts?.attempts ?? 4,
+			attempts: 4,
 			backoff: {
 				type: 'custom',
 			},
@@ -490,15 +479,10 @@ export class QueueService {
 
 	/**
 	 * @see SystemWebhookDeliverJobData
-	 * @see SystemWebhookDeliverProcessorService
+	 * @see WebhookDeliverProcessorService
 	 */
 	@bindThis
-	public systemWebhookDeliver(
-		webhook: MiSystemWebhook,
-		type: SystemWebhookEventType,
-		content: unknown,
-		opts?: { attempts?: number },
-	) {
+	public systemWebhookDeliver(webhook: MiSystemWebhook, type: SystemWebhookEventType, content: unknown) {
 		const data: SystemWebhookDeliverJobData = {
 			type,
 			content,
@@ -510,7 +494,7 @@ export class QueueService {
 		};
 
 		return this.systemWebhookDeliverQueue.add(webhook.id, data, {
-			attempts: opts?.attempts ?? 4,
+			attempts: 4,
 			backoff: {
 				type: 'custom',
 			},
