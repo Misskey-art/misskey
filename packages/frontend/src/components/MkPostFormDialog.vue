@@ -7,9 +7,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 <MkModal
 	ref="modal"
 	:preferType="'dialog'"
-	@click="_close()"
+	@click="onBgClick()"
 	@closed="onModalClosed()"
-	@esc="_close()"
+	@esc="onEsc"
 >
 	<MkPostForm
 		ref="form"
@@ -54,7 +54,16 @@ function onPosted() {
 async function _close() {
 	const canClose = await form.value?.canClose();
 	if (!canClose) return;
+	form.value?.abortUploader();
 	modal.value?.close();
+}
+
+function onEsc() {
+	_close();
+}
+
+function onBgClick() {
+	_close();
 }
 
 function onModalClosed() {
