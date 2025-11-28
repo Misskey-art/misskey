@@ -369,7 +369,7 @@ export const ACHIEVEMENT_TYPES = [
 	'clickedClickHere',
 	'justPlainLucky',
 	'setNameToSyuilo',
-	'cookieClicked',
+	'puddingClicked',
 	'brainDiver',
 	'smashTestNotificationButton',
 	'tutorialCompleted',
