@@ -27,7 +27,7 @@ export async function load() {
 			scope: ['clickerGame'],
 			key: 'saveData',
 		});
-	} catch (err) {
+	} catch (err: any) {
 		if (err.code === 'NO_SUCH_KEY') {
 			saveData.value = {
 				gameVersion: 2,
@@ -42,20 +42,6 @@ export async function load() {
 			return;
 		}
 		throw err;
-	}
-
-	// migration
-	if (saveData.value.gameVersion === 1) {
-		saveData.value = {
-			gameVersion: 2,
-			puddings: saveData.value.puddings,
-			totalPuddings: saveData.value.puddings,
-			totalHandmadePuddings: saveData.value.puddings,
-			clicked: saveData.value.clicked,
-			achievements: [],
-			facilities: [],
-		};
-		save();
 	}
 }
 
