@@ -144,7 +144,9 @@ export function applyTheme(theme: Theme, persist = true) {
 	if (theme.id === currentThemeId && miLocalStorage.getItem('themeCachedVersion') === version) return;
 	currentThemeId = theme.id;
 
-	if (window.document.startViewTransition != null) {
+	// visibilityStateがhiddenな状態でstartViewTransitionするとブラウザによってはエラーになる
+	// 通常hiddenな時に呼ばれることはないが、iOSのPWAだとアプリ切り替え時に(何故か)hiddenな状態で(何故か)一瞬デバイスのダークモード判定が変わりapplyThemeが呼ばれる場合がある
+	if (window.document.startViewTransition != null && window.document.visibilityState === 'visible') {
 		window.document.documentElement.classList.add('_themeChanging_');
 		try {
 			window.document.startViewTransition(async () => {
@@ -202,7 +204,7 @@ export function compile(theme: Theme): Record<string, string> {
 		return tinycolor(val);
 	}
 
-	const props = {};
+	const props = {} as Record<string, string>;
 
 	for (const [k, v] of Object.entries(theme.props)) {
 		if (k.startsWith('$')) continue; // ignore const
@@ -230,7 +232,7 @@ export function parseThemeCode(code: string): Theme {
 
 	try {
 		theme = JSON5.parse(code);
-	} catch (err) {
+	} catch (_) {
 		throw new Error('Failed to parse theme json');
 	}
 	if (!validateTheme(theme)) {
@@ -245,12 +247,12 @@ export function parseThemeCode(code: string): Theme {
 
 export function previewTheme(code: string): void {
 	const theme = parseThemeCode(code);
-	if (theme) applyTheme(theme, false);
+	if (theme != null) applyTheme(theme, false);
 }
 
 export async function installTheme(code: string): Promise<void> {
 	const theme = parseThemeCode(code);
-	if (!theme) return;
+	if (theme == null) return;
 	await addTheme(theme);
 }
 
