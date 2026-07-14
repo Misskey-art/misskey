@@ -1216,6 +1216,7 @@ surrender: "Anulează"
 copyPreferenceId: "Copiază ID-ul preferințelor"
 information: "Despre"
 presets: "Presetate"
+previewingThemeRestore: "Restabilește"
 _imageEditing:
   _vars:
     filename: "Nume fișier"
@@ -1301,6 +1302,12 @@ _widgets:
   jobQueue: "coada de job-uri"
   _userList:
     chooseList: "Selectează o listă"
+_widgetOptions:
+  height: "Înălţime"
+  _button:
+    colored: "Colorat"
+  _clock:
+    size: "Dimensiune"
 _cw:
   show: "Incarcă mai mult"
 _visibility:
