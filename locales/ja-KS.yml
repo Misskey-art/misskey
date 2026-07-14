@@ -1355,6 +1355,7 @@ widgets: "ウィジェット"
 deviceInfoDescription: "なんか技術的なことで分からんこと聞くときは、下の情報も一緒に書いてもらえると、こっちも分かりやすいし、はよ直ると思います。"
 youAreAdmin: "あんた、管理者やで"
 presets: "プリセット"
+previewingThemeRestore: "元に戻す"
 _imageEditing:
   _vars:
     filename: "ファイル名"
@@ -2378,6 +2379,15 @@ _widgets:
   clicker: "クリッカー"
   birthdayFollowings: "今日誕生日のツレ"
   chat: "チャットしよか"
+_widgetOptions:
+  showHeader: "ヘッダー出す"
+  height: "高さ"
+  _button:
+    colored: "色付き"
+  _clock:
+    size: "大きさ"
+  _birthdayFollowings:
+    period: "期間"
 _cw:
   hide: "隠す"
   show: "続き見して！"

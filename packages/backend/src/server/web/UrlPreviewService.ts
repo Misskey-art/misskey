@@ -4,8 +4,7 @@
  */
 
 import { Inject, Injectable } from '@nestjs/common';
-import { summaly } from '@misskey-dev/summaly';
-import { SummalyResult } from '@misskey-dev/summaly/built/summary.js';
+import type { SummalyResult } from '@misskey-dev/summaly';
 import { DI } from '@/di-symbols.js';
 import type { Config } from '@/config.js';
 import { HttpRequestService } from '@/core/HttpRequestService.js';
@@ -20,6 +19,7 @@ import type { FastifyRequest, FastifyReply } from 'fastify';
 @Injectable()
 export class UrlPreviewService {
 	private logger: Logger;
+	private readonly summalyDefaultUserAgent: string;
 
 	constructor(
 		@Inject(DI.config)
@@ -32,6 +32,7 @@ export class UrlPreviewService {
 		private loggerService: LoggerService,
 	) {
 		this.logger = this.loggerService.getLogger('url-preview');
+		this.summalyDefaultUserAgent = `SummalyBot/${_SUMMALY_VERSION_} (${this.config.url}; +https://github.com/misskey-dev/summaly/blob/master/README.md)`;
 	}
 
 	@bindThis
@@ -113,19 +114,17 @@ export class UrlPreviewService {
 		}
 	}
 
-	private fetchSummary(url: string, meta: MiMeta, lang?: string): Promise<SummalyResult> {
-		const agent = this.config.proxy
-			? {
-				http: this.httpRequestService.httpAgent,
-				https: this.httpRequestService.httpsAgent,
-			}
-			: undefined;
+	private async fetchSummary(url: string, meta: MiMeta, lang?: string): Promise<SummalyResult> {
+		const { summaly } = await import('@misskey-dev/summaly');
 
 		return summaly(url, {
 			followRedirects: this.meta.urlPreviewAllowRedirect,
 			lang: lang ?? 'ja-JP',
-			agent: agent,
-			userAgent: meta.urlPreviewUserAgent ?? undefined,
+			agent: {
+				http: this.httpRequestService.httpAgent,
+				https: this.httpRequestService.httpsAgent,
+			},
+			userAgent: meta.urlPreviewUserAgent ?? this.summalyDefaultUserAgent,
 			operationTimeout: meta.urlPreviewTimeout,
 			contentLengthLimit: meta.urlPreviewMaximumContentLength,
 			contentLengthRequired: meta.urlPreviewRequireContentLength,
@@ -138,7 +137,7 @@ export class UrlPreviewService {
 			url: url,
 			lang: lang ?? 'ja-JP',
 			followRedirects: this.meta.urlPreviewAllowRedirect,
-			userAgent: meta.urlPreviewUserAgent ?? undefined,
+			userAgent: meta.urlPreviewUserAgent ?? this.summalyDefaultUserAgent,
 			operationTimeout: meta.urlPreviewTimeout,
 			contentLengthLimit: meta.urlPreviewMaximumContentLength,
 			contentLengthRequired: meta.urlPreviewRequireContentLength,
