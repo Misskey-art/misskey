@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { closeUserSetupDialog, postNote, registerUser, resetState, signupThroughUi, visitHome } from '../../../../packages/frontend/test/e2e/shared';
+import { api, closeUserSetupDialog, postNote, registerUser, resetState, signupThroughUi, visitHome } from '../../../../packages/frontend/test/e2e/shared';
 import { sleep } from './server';
 import type { HeadlessChromeController } from './controller';
 
@@ -15,6 +15,15 @@ export const scenarioDescription = 'fresh browser signup, first timeline note, a
 export async function prepareInstance(baseUrl: string) {
 	await resetState(baseUrl);
 	await registerUser(baseUrl, 'admin', 'admin1234', true);
+
+	// 管理者作成後のrootUserId更新が、同じプロセスのメタ情報キャッシュへ反映されるまで待つ。
+	for (let i = 0; i < 30; i++) {
+		const meta = await api(baseUrl, 'meta', { detail: true });
+		if (!meta.requireSetup) return;
+		await sleep(1000);
+	}
+
+	throw new Error('Timed out waiting for instance setup to complete');
 }
 
 export async function runSignupAndPostScenario(chrome: HeadlessChromeController, baseUrl: string) {
