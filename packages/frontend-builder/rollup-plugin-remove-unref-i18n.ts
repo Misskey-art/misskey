@@ -27,7 +27,7 @@ export function pluginRemoveUnrefI18n(
 			if (!code.includes('unref(i18n)')) return null;
 			const ast = this.parse(code);
 			const magicString = meta.magicString ?? new RolldownMagicString(code);
-			walk(ast, {
+			walk(ast as unknown as Parameters<typeof walk>[0], {
 				enter(node: ESTree.Node) {
 					if (node.type === 'CallExpression' && node.callee.type === 'Identifier' && node.callee.name === 'unref'
 						&& node.arguments.length === 1) {

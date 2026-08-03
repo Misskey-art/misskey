@@ -30,7 +30,7 @@ export function collectModifications(sourceCode: string, fileName: string, fileL
 	// 1) replace all `scripts/` path literals with locale code
 	// 2) replace all `localStorage.getItem("lang")` with `localeName` variable
 	// 3) replace all `await window.fetch(`/assets/locales/${d}.${x}.json`).then(u=>u.json())` with `localeJson` variable
-	walk(programNode, {
+	walk(programNode as unknown as Parameters<typeof walk>[0], {
 		enter(this, node) {
 			if (node.type === 'Literal' && typeof node.value === 'string' && node.raw) {
 				if (node.raw.substring(1).startsWith(inliner.scriptsDir)) {
@@ -118,7 +118,7 @@ export function collectModifications(sourceCode: string, fileName: string, fileL
 
 	const toSkip = new Set();
 	toSkip.add(i18nImport);
-	walk(programNode, {
+	walk(programNode as unknown as Parameters<typeof walk>[0], {
 		enter(this, node, parent, ctx) {
 			if (toSkip.has(node)) {
 				// This is the import specifier, skip processing it
@@ -299,7 +299,7 @@ function lineCol(sourceCode: string, node: ESTree.Node): string {
 function findFunctionScopeDecls(fn: ESTree.Function | ESTree.ArrowFunctionExpression): string[] {
 	if (fn.body == null) return [];
 	const decls: string[] = [];
-	walk(fn.body, {
+	walk(fn.body as unknown as Parameters<typeof walk>[0], {
 		enter(node) {
 			// The only function-scoped symbol declaration in strict mode is 'var'
 			// If it's non-strict mode, function declaration will also in function scope.
@@ -322,7 +322,7 @@ function findBlockScopeDecls(block: ESTree.BlockStatement): string[] {
 	const decls: string[] = [];
 
 	for (const body of block.body) {
-		walk(body, {
+		walk(body as unknown as Parameters<typeof walk>[0], {
 			enter(node) {
 				if (node.type === 'VariableDeclaration' && node.kind !== 'var') {
 					decls.push(...node.declarations.flatMap(x => declsOfPattern(x.id)));
