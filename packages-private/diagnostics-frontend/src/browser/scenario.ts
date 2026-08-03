@@ -16,10 +16,13 @@ export async function prepareInstance(baseUrl: string) {
 	await resetState(baseUrl);
 	await registerUser(baseUrl, 'admin', 'admin1234', true);
 
-	// 管理者作成後のrootUserId更新が、同じプロセスのメタ情報キャッシュへ反映されるまで待つ。
+	// 管理者作成後のrootUserId更新が、APIとトップページのメタ情報へ反映されるまで待つ。
 	for (let i = 0; i < 30; i++) {
 		const meta = await api(baseUrl, 'meta', { detail: true });
-		if (!meta.requireSetup) return;
+		if (!meta.requireSetup) {
+			const html = await fetch(`${baseUrl}/`).then(response => response.text());
+			if (html.includes('"requireSetup":false')) return;
+		}
 		await sleep(1000);
 	}
 
