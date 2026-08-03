@@ -1,4 +1,4 @@
-url: 'http://misskey.local'
+url: 'http://127.0.0.1:61812'
 
 setupPassword: example_password_please_change_this_or_you_will_get_hacked
 
