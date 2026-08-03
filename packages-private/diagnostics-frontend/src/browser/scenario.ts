@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { api, closeUserSetupDialog, postNote, registerUser, resetState, signupThroughUi, visitHome } from '../../../../packages/frontend/test/e2e/shared';
+import { api, closeUserSetupDialog, postNote, registerUser, resetState, signupThroughUi } from '../../../../packages/frontend/test/e2e/shared';
 import { sleep } from './server';
 import type { HeadlessChromeController } from './controller';
 
@@ -33,7 +33,9 @@ export async function runSignupAndPostScenario(chrome: HeadlessChromeController,
 	const page = chrome.page;
 	const noteText = `Frontend browser metrics ${Date.now()}`;
 
-	await visitHome(page, baseUrl);
+	// トップHTMLは30秒キャッシュされるため、DBリセット直後に古いセットアップ状態を取得しないようにする。
+	await page.goto(`${baseUrl}/?diagnostics=${Date.now()}`);
+	await page.getByTestId('signup').waitFor({ state: 'visible' });
 	await signupThroughUi(page, { username: 'alice', password: 'password' });
 	await closeUserSetupDialog(page);
 	await postNote(page, noteText, 10_000);
