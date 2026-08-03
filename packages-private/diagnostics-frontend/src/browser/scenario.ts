@@ -34,8 +34,17 @@ export async function runSignupAndPostScenario(chrome: HeadlessChromeController,
 	const noteText = `Frontend browser metrics ${Date.now()}`;
 
 	// トップHTMLは30秒キャッシュされるため、DBリセット直後に古いセットアップ状態を取得しないようにする。
-	await page.goto(`${baseUrl}/?diagnostics=${Date.now()}`);
-	await page.getByTestId('signup').waitFor({ state: 'visible' });
+	await page.goto(`${baseUrl}/?safemode=true&diagnostics=${Date.now()}`);
+	try {
+		await page.getByTestId('signup').waitFor({ state: 'visible' });
+	} catch (error) {
+		const diagnostic = await page.evaluate(() => ({
+			url: window.location.href,
+			title: document.title,
+			body: document.body.innerText.slice(0, 500),
+		}));
+		throw new Error(`Signup button was not rendered: ${JSON.stringify(diagnostic)}`, { cause: error });
+	}
 	await signupThroughUi(page, { username: 'alice', password: 'password' });
 	await closeUserSetupDialog(page);
 	await postNote(page, noteText, 10_000);
