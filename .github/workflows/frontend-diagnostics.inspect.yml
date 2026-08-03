@@ -97,7 +97,9 @@ jobs:
 
       - name: Configure base
         working-directory: base
-        run: cp .github/misskey/test.yml .config
+        run: |
+          cp .github/misskey/test.yml .config
+          sed -i "s#^url: .*#url: 'http://127.0.0.1:61812'#" .config/test.yml
 
       - name: Build base
         working-directory: base
@@ -112,7 +114,9 @@ jobs:
 
       - name: Configure head
         working-directory: head
-        run: cp .github/misskey/test.yml .config
+        run: |
+          cp .github/misskey/test.yml .config
+          sed -i "s#^url: .*#url: 'http://127.0.0.1:61812'#" .config/test.yml
 
       - name: Build head
         working-directory: head
