@@ -17,8 +17,16 @@ SPDX-License-Identifier: AGPL-3.0-only
 			style: 'cursor: zoom-in;'
 		}"
 	>
+		<img
+			v-if="hide"
+			:src="url"
+			:alt="image.comment || image.name"
+			:title="image.comment || image.name"
+			:class="[$style.image, $style.hiddenImage]"
+			:style="{ objectFit: cover ? 'cover' : 'contain' }"
+		/>
 		<MkImgWithBlurhash
-			v-if="prefer.s.enableHighQualityImagePlaceholders"
+			v-else
 			:hash="image.blurhash"
 			:src="(prefer.s.dataSaver.media && hide) ? null : url"
 			:forceBlurhash="hide"
@@ -29,21 +37,6 @@ SPDX-License-Identifier: AGPL-3.0-only
 			:height="image.properties.height"
 			:style="hide ? 'filter: brightness(0.7);' : null"
 			:class="$style.image"
-			:marker="marker"
-		/>
-		<div
-			v-else-if="prefer.s.dataSaver.media || hide"
-			:title="image.comment || image.name"
-			:style="hide ? 'background: #888;' : null"
-			:class="$style.image"
-		></div>
-		<img
-			v-else
-			:src="url"
-			:alt="image.comment || image.name"
-			:title="image.comment || image.name"
-			:class="$style.image"
-			:data-marker="marker"
 		/>
 	</component>
 	<template v-if="hide">
@@ -141,8 +134,9 @@ function onContextmenu(ev: PointerEvent) {
 </script>
 
 <style lang="scss" module>
-.hidden {
-	position: relative;
+.hiddenImage {
+	filter: blur(24px);
+	transform: scale(1.08);
 }
 
 .sensitive {
