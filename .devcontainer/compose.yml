@@ -5,7 +5,7 @@ services:
       dockerfile: Dockerfile
 
     ports:
-      - "3001:3000"
+      - "3000:3000"
       - "5173:5173"
       - "5174:5174"
 
