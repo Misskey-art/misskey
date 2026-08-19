@@ -90,7 +90,40 @@ jobs:
       working-directory: packages/frontend
       run: pnpm exec playwright install --with-deps chromium
     - name: Test
-      run: pnpm start-server-and-test start:test http://localhost:61812 "pnpm --filter frontend test:e2e"
+      run: |
+        set -euo pipefail
+        pnpm start:test > /tmp/misskey-e2e.log 2>&1 &
+        server_pid=$!
+        cleanup() {
+          kill "$server_pid" 2>/dev/null || true
+          wait "$server_pid" 2>/dev/null || true
+        }
+        trap cleanup EXIT
+
+        ready=false
+        for i in $(seq 1 90); do
+          if curl --fail --silent --show-error \
+            -X POST http://localhost:61812/api/reset-db \
+            -H 'Content-Type: application/json' \
+            --data '{}' >/dev/null; then
+            ready=true
+            break
+          fi
+          if ! kill -0 "$server_pid" 2>/dev/null; then
+            echo 'Misskey test server exited before becoming ready:'
+            cat /tmp/misskey-e2e.log
+            exit 1
+          fi
+          sleep 2
+        done
+
+        if [ "$ready" != true ]; then
+          echo 'Timed out waiting for the Misskey test server:'
+          cat /tmp/misskey-e2e.log
+          exit 1
+        fi
+
+        pnpm --filter frontend test:e2e
       timeout-minutes: 15
     - uses: actions/upload-artifact@v7
       if: failure()
