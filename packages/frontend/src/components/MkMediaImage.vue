@@ -10,9 +10,11 @@ SPDX-License-Identifier: AGPL-3.0-only
 		v-bind="disableImageLink ? {
 			title: image.name,
 			class: $style.imageContainer,
+			'data-marker': marker,
 		} : {
 			title: image.name,
 			class: $style.imageContainer,
+			'data-marker': marker,
 			href: image.url,
 			style: 'cursor: zoom-in;'
 		}"
@@ -26,16 +28,27 @@ SPDX-License-Identifier: AGPL-3.0-only
 			:style="{ objectFit: cover ? 'cover' : 'contain' }"
 		/>
 		<MkImgWithBlurhash
-			v-else
+			v-else-if="prefer.s.enableHighQualityImagePlaceholders"
 			:hash="image.blurhash"
-			:src="(prefer.s.dataSaver.media && hide) ? null : url"
-			:forceBlurhash="hide"
-			:cover="hide || cover"
+			:src="prefer.s.dataSaver.media ? null : url"
+			:forceBlurhash="false"
+			:cover="cover"
 			:alt="image.comment || image.name"
 			:title="image.comment || image.name"
 			:width="image.properties.width"
 			:height="image.properties.height"
-			:style="hide ? 'filter: brightness(0.7);' : null"
+			:class="$style.image"
+		/>
+		<div
+			v-else-if="prefer.s.dataSaver.media"
+			:title="image.comment || image.name"
+			:class="$style.image"
+		></div>
+		<img
+			v-else
+			:src="url"
+			:alt="image.comment || image.name"
+			:title="image.comment || image.name"
 			:class="$style.image"
 		/>
 	</component>
@@ -134,6 +147,10 @@ function onContextmenu(ev: PointerEvent) {
 </script>
 
 <style lang="scss" module>
+.hidden {
+	position: relative;
+}
+
 .hiddenImage {
 	filter: blur(24px);
 	transform: scale(1.08);
