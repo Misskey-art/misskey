@@ -50,6 +50,7 @@ import { PollService } from './PollService.js';
 import { PushNotificationService } from './PushNotificationService.js';
 import { QueryService } from './QueryService.js';
 import { ReactionService } from './ReactionService.js';
+import { AnnouncementReactionService } from './AnnouncementReactionService.js';
 import { ReactionsBufferingService } from './ReactionsBufferingService.js';
 import { RelayService } from './RelayService.js';
 import { RoleService } from './RoleService.js';
@@ -120,6 +121,7 @@ import { RenoteMutingEntityService } from './entities/RenoteMutingEntityService.
 import { NoteEntityService } from './entities/NoteEntityService.js';
 import { NoteFavoriteEntityService } from './entities/NoteFavoriteEntityService.js';
 import { NoteReactionEntityService } from './entities/NoteReactionEntityService.js';
+import { AnnouncementReactionEntityService } from './entities/AnnouncementReactionEntityService.js';
 import { NoteDraftEntityService } from './entities/NoteDraftEntityService.js';
 import { NotificationEntityService } from './entities/NotificationEntityService.js';
 import { PageEntityService } from './entities/PageEntityService.js';
@@ -196,6 +198,7 @@ const $SystemAccountService: Provider = { provide: 'SystemAccountService', useEx
 const $PushNotificationService: Provider = { provide: 'PushNotificationService', useExisting: PushNotificationService };
 const $QueryService: Provider = { provide: 'QueryService', useExisting: QueryService };
 const $ReactionService: Provider = { provide: 'ReactionService', useExisting: ReactionService };
+const $AnnouncementReactionService: Provider = { provide: 'AnnouncementReactionService', useExisting: AnnouncementReactionService };
 const $ReactionsBufferingService: Provider = { provide: 'ReactionsBufferingService', useExisting: ReactionsBufferingService };
 const $RelayService: Provider = { provide: 'RelayService', useExisting: RelayService };
 const $RoleService: Provider = { provide: 'RoleService', useExisting: RoleService };
@@ -273,6 +276,7 @@ const $RenoteMutingEntityService: Provider = { provide: 'RenoteMutingEntityServi
 const $NoteEntityService: Provider = { provide: 'NoteEntityService', useExisting: NoteEntityService };
 const $NoteFavoriteEntityService: Provider = { provide: 'NoteFavoriteEntityService', useExisting: NoteFavoriteEntityService };
 const $NoteReactionEntityService: Provider = { provide: 'NoteReactionEntityService', useExisting: NoteReactionEntityService };
+const $AnnouncementReactionEntityService: Provider = { provide: 'AnnouncementReactionEntityService', useExisting: AnnouncementReactionEntityService };
 const $NoteDraftEntityService: Provider = { provide: 'NoteDraftEntityService', useExisting: NoteDraftEntityService };
 const $NotificationEntityService: Provider = { provide: 'NotificationEntityService', useExisting: NotificationEntityService };
 const $PageEntityService: Provider = { provide: 'PageEntityService', useExisting: PageEntityService };
@@ -349,6 +353,7 @@ const $ApQuestionService: Provider = { provide: 'ApQuestionService', useExisting
 		PushNotificationService,
 		QueryService,
 		ReactionService,
+		AnnouncementReactionService,
 		ReactionsBufferingService,
 		RelayService,
 		RoleService,
@@ -426,6 +431,7 @@ const $ApQuestionService: Provider = { provide: 'ApQuestionService', useExisting
 		NoteEntityService,
 		NoteFavoriteEntityService,
 		NoteReactionEntityService,
+		AnnouncementReactionEntityService,
 		NoteDraftEntityService,
 		NotificationEntityService,
 		PageEntityService,
@@ -500,6 +506,7 @@ const $ApQuestionService: Provider = { provide: 'ApQuestionService', useExisting
 		$PushNotificationService,
 		$QueryService,
 		$ReactionService,
+		$AnnouncementReactionService,
 		$ReactionsBufferingService,
 		$RelayService,
 		$RoleService,
@@ -577,6 +584,7 @@ const $ApQuestionService: Provider = { provide: 'ApQuestionService', useExisting
 		$NoteEntityService,
 		$NoteFavoriteEntityService,
 		$NoteReactionEntityService,
+		$AnnouncementReactionEntityService,
 		$NoteDraftEntityService,
 		$NotificationEntityService,
 		$PageEntityService,
@@ -651,6 +659,7 @@ const $ApQuestionService: Provider = { provide: 'ApQuestionService', useExisting
 		PushNotificationService,
 		QueryService,
 		ReactionService,
+		AnnouncementReactionService,
 		ReactionsBufferingService,
 		RelayService,
 		RoleService,
@@ -727,6 +736,7 @@ const $ApQuestionService: Provider = { provide: 'ApQuestionService', useExisting
 		NoteEntityService,
 		NoteFavoriteEntityService,
 		NoteReactionEntityService,
+		AnnouncementReactionEntityService,
 		NoteDraftEntityService,
 		NotificationEntityService,
 		PageEntityService,
@@ -801,6 +811,7 @@ const $ApQuestionService: Provider = { provide: 'ApQuestionService', useExisting
 		$PushNotificationService,
 		$QueryService,
 		$ReactionService,
+		$AnnouncementReactionService,
 		$ReactionsBufferingService,
 		$RelayService,
 		$RoleService,
@@ -876,6 +887,7 @@ const $ApQuestionService: Provider = { provide: 'ApQuestionService', useExisting
 		$NoteEntityService,
 		$NoteFavoriteEntityService,
 		$NoteReactionEntityService,
+		$AnnouncementReactionEntityService,
 		$NoteDraftEntityService,
 		$NotificationEntityService,
 		$PageEntityService,

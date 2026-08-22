@@ -45,7 +45,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts" setup>
-import { computed, nextTick, useTemplateRef, watch, ref } from 'vue';
+import { computed, nextTick, useTemplateRef, watch, ref, onUnmounted } from 'vue';
 import { prefer } from '@/preferences.js';
 import MkBlurhash from '@/components/MkBlurhash.vue';
 
@@ -102,13 +102,41 @@ function waitForDecode() {
 	}
 }
 
-watch([() => props.width, () => props.height, root], () => {
+function updateSize() {
 	const ratio = props.width / props.height;
-	const clientWidth = root.value?.clientWidth ?? 300;
+	// display: none の要素は clientWidth が 0 になるため、その場合はフォールバックする
+	// (CW を v-show で閉じた状態でマウントされたときなど)
+	const clientWidth = root.value?.clientWidth || 300;
 	imgWidth.value = clientWidth;
 	imgHeight.value = Math.round(clientWidth / ratio);
+}
+
+watch([() => props.width, () => props.height, root], () => {
+	updateSize();
 }, {
 	immediate: true,
+});
+
+// CW を開いたときなど、後から実サイズが確定したタイミングで再計算する
+let resizeObserver: ResizeObserver | null = null;
+
+watch(root, (el) => {
+	resizeObserver?.disconnect();
+	resizeObserver = null;
+
+	if (el == null || typeof ResizeObserver === 'undefined') return;
+
+	resizeObserver = new ResizeObserver(() => {
+		updateSize();
+	});
+	resizeObserver.observe(el);
+}, {
+	immediate: true,
+});
+
+onUnmounted(() => {
+	resizeObserver?.disconnect();
+	resizeObserver = null;
 });
 
 watch(() => props.src, () => {
