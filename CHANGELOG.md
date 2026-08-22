@@ -16,6 +16,7 @@
   例えば `allowPrivateNetworks` を 2026.6.0 までの `example.yml` の構文を元に記述している場合は、配列の閉じ括弧のインデントを上げるか、リスト表示に書き換える必要があります。詳しくは https://github.com/misskey-dev/misskey/pull/17701 をご覧ください。
 
 ### General
+- Feat: お知らせにノートと同じようにリアクションできるように
 - Feat: コントロールパネルから二要素認証を解除できるように
 - Feat: 条件に一致したURLプレビューのサムネイルを隠すことができるように  
   (Based on https://github.com/MisskeyIO/misskey/pull/214)
