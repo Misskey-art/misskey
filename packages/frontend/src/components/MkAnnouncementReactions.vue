@@ -70,6 +70,7 @@ const canToggle = computed(() => $i != null);
 
 const reactions = ref<Record<string, number>>({ ...props.reactions });
 const myReactions = ref<string[]>([...props.myReactions]);
+const toggling = ref(false);
 
 watch(() => props.reactions, (newReactions) => {
 	reactions.value = { ...newReactions };
@@ -118,12 +119,13 @@ function applyLocally(reaction: string, delta: number) {
 }
 
 async function toggle(reaction: string) {
-	if (!canToggle.value) return;
+	if (!canToggle.value || toggling.value) return;
 
 	const previousReactions = { ...reactions.value };
 	const previousMyReactions = [...myReactions.value];
 	const isReacted = previousMyReactions.includes(reaction);
 
+	toggling.value = true;
 	applyLocally(reaction, isReacted ? -1 : 1);
 
 	try {
@@ -147,16 +149,32 @@ async function toggle(reaction: string) {
 			type: 'error',
 			text: i18n.ts.somethingHappened,
 		});
+	} finally {
+		toggling.value = false;
 	}
+}
+
+/**
+ * ピッカーが返す生の絵文字文字列をバックエンドの decodeReaction と同じルールで変換する。
+ * - カスタム絵文字: :name: → :name@.: (APIレスポンスがこの形式で返ってくる)
+ * - Unicode絵文字: 異体字セレクタ(U+FE0F)除去(ZWJ 合字はそのまま)
+ */
+function normalizePickedReaction(reaction: string): string {
+	// カスタム絵文字を :name@.: 形式に変換
+	const customMatch = reaction.match(/^:([\w+-]+):$/);
+	if (customMatch) return `:${customMatch[1]}@.:`;
+	// Unicode絵文字の異体字セレクタを除去
+	return reaction.match('\u200d') ? reaction : reaction.replace(/\ufe0f/g, '');
 }
 
 function pick() {
 	if (!canToggle.value) return;
 
 	reactionPicker.show(pickerButtonEl.value ?? null, null, (reaction) => {
+		const normalized = normalizePickedReaction(reaction);
 		// すでに付けているリアクションを選んだ場合は何もしない
-		if (myReactions.value.includes(reaction)) return;
-		toggle(reaction);
+		if (myReactions.value.includes(normalized)) return;
+		toggle(normalized);
 	});
 }
 </script>
