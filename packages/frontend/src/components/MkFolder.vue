@@ -297,6 +297,16 @@ watch(opened, (isOpened) => {
 	text-overflow: ellipsis;
 	overflow: hidden;
 	padding-right: 12px;
+
+	// 省略記号のためのoverflow: hiddenが、周囲のテキストより背の高いバッジ
+	// (_art/_beta/_modified、vertical-align: top等で行からはみ出す)の上端を切り取って
+	// しまうため、この中でだけバッジがテキストの行に自然に収まるよう打ち消す
+	:global(._art),
+	:global(._beta),
+	:global(._modified) {
+		vertical-align: baseline;
+		transform: none;
+	}
 }
 
 .headerTextMain,
