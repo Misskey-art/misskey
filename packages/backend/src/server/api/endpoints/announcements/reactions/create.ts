@@ -31,6 +31,18 @@ export const meta = {
 			code: 'ALREADY_REACTED',
 			id: '18aca5e1-b265-47b2-b40a-6cc0958fdeab',
 		},
+
+		reactionNotAllowed: {
+			message: 'Reactions are not allowed on announcements addressed to a specific user.',
+			code: 'REACTION_NOT_ALLOWED',
+			id: '73336770-bf20-40a2-9cf0-11ac2a9b768a',
+		},
+
+		tooManyReactionTypes: {
+			message: 'This announcement already has the maximum number of distinct reaction types.',
+			code: 'TOO_MANY_REACTION_TYPES',
+			id: '2d5069c9-59c8-4d70-8fa7-f923f8e7cf5b',
+		},
 	},
 } as const;
 
@@ -61,8 +73,17 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				throw new ApiError(meta.errors.noSuchAnnouncement);
 			}
 
+			if (announcement.userId != null) {
+				// ユーザー宛てのお知らせはリアクション自体を許可しない。本人以外には存在も知られてはいけないため404として扱う
+				if (announcement.userId !== me.id) {
+					throw new ApiError(meta.errors.noSuchAnnouncement);
+				}
+				throw new ApiError(meta.errors.reactionNotAllowed);
+			}
+
 			await this.announcementReactionService.create(me, announcement, ps.reaction).catch(err => {
 				if (err.id === '0b0d5c9f-0c07-4f0e-8a3d-6f6a4a2b0a4f') throw new ApiError(meta.errors.alreadyReacted);
+				if (err.id === 'dc1dd554-8eee-4558-a6d6-9b325b993dde') throw new ApiError(meta.errors.tooManyReactionTypes);
 				throw err;
 			});
 		});

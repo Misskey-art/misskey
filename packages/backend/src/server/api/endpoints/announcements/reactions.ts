@@ -63,11 +63,12 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private queryService: QueryService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
-			const exist = await this.announcementsRepository.exists({
-				where: { id: ps.announcementId },
+			const announcement = await this.announcementsRepository.findOneBy({
+				id: ps.announcementId,
 			});
 
-			if (!exist) {
+			// ユーザー宛てのお知らせはリアクション自体を許可しないため、宛先本人であっても一覧は常に空として扱う (存在の秘匿を兼ねて404にする)
+			if (announcement == null || announcement.userId != null) {
 				throw new ApiError(meta.errors.noSuchAnnouncement);
 			}
 

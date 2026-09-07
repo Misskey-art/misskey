@@ -80,13 +80,11 @@ const viewId = genId();
 const bitmapTmp = shallowRef<CanvasImageSource | undefined>();
 
 watch([() => props.width, () => props.height, canvas], () => {
-	// width / height が 0 や不正値のときに ratio が NaN / Infinity になり、
-	// canvas のサイズが NaN になって何も描画されなくなるのを防ぐ
-	// (CW を v-show で閉じた状態でマウントされたときなど)
-	const width = props.width > 0 ? props.width : 64;
-	const height = props.height > 0 ? props.height : 64;
-	const ratio = width / height;
-	if (ratio > 1) {
+	const ratio = props.width / props.height;
+	if (!Number.isFinite(ratio) || ratio <= 0) {
+		canvasWidth.value = 64;
+		canvasHeight.value = 64;
+	} else if (ratio > 1) {
 		canvasWidth.value = Math.round(64 * ratio);
 		canvasHeight.value = 64;
 	} else {

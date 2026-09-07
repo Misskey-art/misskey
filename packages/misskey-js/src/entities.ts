@@ -113,6 +113,18 @@ export type AnnouncementCreated = {
 	announcement: Announcement;
 };
 
+export type AnnouncementReacted = {
+	announcementId: string;
+	reaction: string;
+	userId: string;
+};
+
+export type AnnouncementUnreacted = {
+	announcementId: string;
+	reaction: string;
+	userId: string;
+};
+
 export type SignupRequest = {
 	username: string;
 	password: string;
