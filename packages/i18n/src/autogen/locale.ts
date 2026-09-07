@@ -6573,6 +6573,10 @@ export interface Locale extends ILocale {
          * オンにすると、このお知らせは通知されず、既読にする必要もなくなります。
          */
         "silenceDescription": string;
+        /**
+         * このお知らせに付けられるリアクションの種類数が上限に達しています。
+         */
+        "tooManyReactionTypes": string;
     };
     "_initialAccountSetting": {
         /**
@@ -8302,6 +8306,10 @@ export interface Locale extends ILocale {
              * ウォーターマーク機能の使用可否
              */
             "watermarkAvailable": string;
+            /**
+             * お知らせ1件に付けられるリアクションの種類数の上限
+             */
+            "announcementReactionTypeLimit": string;
         };
         "_condition": {
             /**

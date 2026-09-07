@@ -232,6 +232,7 @@ export const rolePolicies = [
 	'noteDraftLimit',
 	'scheduledNoteLimit',
 	'watermarkAvailable',
+	'announcementReactionTypeLimit',
 ] as const;
 
 export const queueTypes = [

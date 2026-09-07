@@ -157,7 +157,10 @@ async function toggle(reaction: string) {
 		emit('update', previousReactions, previousMyReactions, reaction, !isReacted);
 		os.alert({
 			type: 'error',
-			text: i18n.ts.somethingHappened,
+			// リアクションの種類数上限(ロールポリシー)に達した場合は専用の文言を出す
+			text: (err as { id?: string }).id === '2d5069c9-59c8-4d70-8fa7-f923f8e7cf5b'
+				? i18n.ts._announcement.tooManyReactionTypes
+				: i18n.ts.somethingHappened,
 		});
 	} finally {
 		toggling.value = false;
