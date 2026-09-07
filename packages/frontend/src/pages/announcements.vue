@@ -33,12 +33,12 @@ SPDX-License-Identifier: AGPL-3.0-only
 							</div>
 						</MkA>
 					</div>
-					<div :class="$style.reactions">
+					<div v-if="!announcement.forYou" :class="$style.reactions">
 						<MkAnnouncementReactions
 							:announcementId="announcement.id"
 							:reactions="announcement.reactions"
 							:myReactions="announcement.myReactions"
-							@update="(reactions, myReactions) => onReactionsUpdate(announcement, reactions, myReactions)"
+							@update="(reactions, myReactions, reaction, added) => onReactionsUpdate(announcement, reactions, myReactions, reaction, added)"
 						/>
 					</div>
 					<div v-if="tab !== 'past' && $i != null && !announcement.silence && !announcement.isRead" :class="$style.footer">
@@ -52,7 +52,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, markRaw } from 'vue';
+import { ref, computed, markRaw, onMounted, onUnmounted } from 'vue';
 import * as Misskey from 'misskey-js';
 import MkPagination from '@/components/MkPagination.vue';
 import MkButton from '@/components/MkButton.vue';
@@ -65,6 +65,8 @@ import { definePage } from '@/page.js';
 import { $i } from '@/i.js';
 import { updateCurrentAccountPartial } from '@/accounts.js';
 import { Paginator } from '@/utility/paginator.js';
+import { useStream } from '@/stream.js';
+import { PendingSelfActions } from '@/utility/pending-self-action.js';
 
 const paginator = markRaw(new Paginator('announcements', {
 	limit: 10,
@@ -75,13 +77,56 @@ const paginator = markRaw(new Paginator('announcements', {
 
 const tab = ref('current');
 
-function onReactionsUpdate(target: Misskey.entities.Announcement, reactions: Record<string, number>, myReactions: string[]) {
+// 他のユーザーがリアクションしたときにリアルタイムで反映する。
+// 自分自身がこのタブで行った操作は、対応するbroadcastが届いた時にPendingSelfActionsで判定して無視する
+// (userIdだけで判定すると、同じアカウントで開いている他のタブの反映まで無視してしまうため)
+const pendingSelfActions = new PendingSelfActions();
+
+function onReactionsUpdate(target: Misskey.entities.Announcement, reactions: Record<string, number>, myReactions: string[], reaction: string, added: boolean) {
+	pendingSelfActions.mark(`reaction:${target.id}:${reaction}:${added}`);
 	paginator.updateItem(target.id, a => ({
 		...a,
 		reactions,
 		myReactions,
 	}));
 }
+
+const stream = useStream();
+
+function onAnnouncementReacted(payload: Misskey.entities.AnnouncementReacted) {
+	if (pendingSelfActions.consume(`reaction:${payload.announcementId}:${payload.reaction}:true`)) return;
+	paginator.updateItem(payload.announcementId, a => ({
+		...a,
+		reactions: {
+			...a.reactions,
+			[payload.reaction]: (a.reactions[payload.reaction] ?? 0) + 1,
+		},
+	}));
+}
+
+function onAnnouncementUnreacted(payload: Misskey.entities.AnnouncementUnreacted) {
+	if (pendingSelfActions.consume(`reaction:${payload.announcementId}:${payload.reaction}:false`)) return;
+	paginator.updateItem(payload.announcementId, a => {
+		const reactions = { ...a.reactions };
+		const count = (reactions[payload.reaction] ?? 0) - 1;
+		if (count > 0) {
+			reactions[payload.reaction] = count;
+		} else {
+			delete reactions[payload.reaction];
+		}
+		return { ...a, reactions };
+	});
+}
+
+onMounted(() => {
+	stream.on('announcementReacted', onAnnouncementReacted);
+	stream.on('announcementUnreacted', onAnnouncementUnreacted);
+});
+
+onUnmounted(() => {
+	stream.off('announcementReacted', onAnnouncementReacted);
+	stream.off('announcementUnreacted', onAnnouncementUnreacted);
+});
 
 async function read(target: Misskey.entities.Announcement) {
 	if ($i == null) return;

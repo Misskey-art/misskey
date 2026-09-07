@@ -53,6 +53,7 @@ import { i18n } from '@/i18n.js';
 import { $i } from '@/i.js';
 import * as os from '@/os.js';
 import * as sound from '@/utility/sound.js';
+import { prefer } from '@/preferences.js';
 
 const props = defineProps<{
 	announcementId: Misskey.entities.Announcement['id'];
@@ -61,7 +62,7 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-	(ev: 'update', reactions: Record<string, number>, myReactions: string[]): void;
+	(ev: 'update', reactions: Record<string, number>, myReactions: string[], reaction: string, added: boolean): void;
 }>();
 
 const pickerButtonEl = useTemplateRef('pickerButtonEl');
@@ -115,7 +116,7 @@ function applyLocally(reaction: string, delta: number) {
 
 	reactions.value = nextReactions;
 	myReactions.value = nextMyReactions;
-	emit('update', nextReactions, nextMyReactions);
+	emit('update', nextReactions, nextMyReactions, reaction, delta > 0);
 }
 
 async function toggle(reaction: string) {
@@ -124,6 +125,15 @@ async function toggle(reaction: string) {
 	const previousReactions = { ...reactions.value };
 	const previousMyReactions = [...myReactions.value];
 	const isReacted = previousMyReactions.includes(reaction);
+
+	// ノートへのリアクションと同様、新規リアクション追加時はconfirmOnReact設定を尊重する
+	if (!isReacted && prefer.s.confirmOnReact) {
+		const confirm = await os.confirm({
+			type: 'question',
+			text: i18n.tsx.reactAreYouSure({ emoji: reaction.replace('@.', '') }),
+		});
+		if (confirm.canceled) return;
+	}
 
 	toggling.value = true;
 	applyLocally(reaction, isReacted ? -1 : 1);
@@ -144,7 +154,7 @@ async function toggle(reaction: string) {
 	} catch (err) {
 		reactions.value = previousReactions;
 		myReactions.value = previousMyReactions;
-		emit('update', previousReactions, previousMyReactions);
+		emit('update', previousReactions, previousMyReactions, reaction, !isReacted);
 		os.alert({
 			type: 'error',
 			text: i18n.ts.somethingHappened,
