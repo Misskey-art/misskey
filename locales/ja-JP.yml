@@ -1663,6 +1663,7 @@ _announcement:
   dialogAnnouncementUxWarn: "ダイアログ形式のお知らせが同時に2つ以上ある場合、UXに悪影響を及ぼす可能性が非常に高いため、使用は慎重に行うことを推奨します。"
   silence: "非通知"
   silenceDescription: "オンにすると、このお知らせは通知されず、既読にする必要もなくなります。"
+  tooManyReactionTypes: "このお知らせに付けられるリアクションの種類数が上限に達しています。"
 
 _initialAccountSetting:
   accountCreated: "アカウントの作成が完了しました！"
@@ -2151,6 +2152,7 @@ _role:
     noteDraftLimit: "サーバーサイドのノートの下書きの作成可能数"
     scheduledNoteLimit: "予約投稿の同時作成可能数"
     watermarkAvailable: "ウォーターマーク機能の使用可否"
+    announcementReactionTypeLimit: "お知らせ1件に付けられるリアクションの種類数の上限"
   _condition:
     roleAssignedTo: "マニュアルロールにアサイン済み"
     isLocal: "ローカルユーザー"

@@ -329,6 +329,10 @@ export const packedRolePoliciesSchema = {
 			type: 'boolean',
 			optional: false, nullable: false,
 		},
+		announcementReactionTypeLimit: {
+			type: 'integer',
+			optional: false, nullable: false,
+		},
 	},
 } as const;
 
