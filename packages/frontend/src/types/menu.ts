@@ -24,6 +24,8 @@ export interface MenuButton {
 	active?: boolean | ComputedRef<boolean>;
 	avatar?: Misskey.entities.User;
 	action: MenuAction;
+	/** 本家に無いmisskey.art独自のメニュー項目であることを示すバッジを表示する */
+	badge?: boolean;
 }
 
 interface MenuBase {
@@ -34,6 +36,8 @@ interface TextMenuBase extends MenuBase {
 	text: Text;
 	caption?: Text | null | undefined | ComputedRef<null | undefined>;
 	icon?: string;
+	/** 本家に無いmisskey.art独自のメニュー項目であることを示すバッジを表示する */
+	badge?: boolean;
 }
 
 export interface MenuDivider extends MenuBase {

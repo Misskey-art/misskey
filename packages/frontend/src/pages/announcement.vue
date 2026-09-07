@@ -35,7 +35,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 						{{ i18n.ts.updatedAt }}: <MkTime :time="announcement.updatedAt" mode="detail"/>
 					</div>
 				</div>
-				<div :class="$style.reactions">
+				<div v-if="!announcement.forYou" :class="$style.reactions">
 					<MkAnnouncementReactions
 						:announcementId="announcement.id"
 						:reactions="announcement.reactions"
@@ -55,7 +55,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import * as Misskey from 'misskey-js';
 import MkButton from '@/components/MkButton.vue';
 import MkAnnouncementReactions from '@/components/MkAnnouncementReactions.vue';
@@ -66,6 +66,8 @@ import { definePage } from '@/page.js';
 import { $i } from '@/i.js';
 import { prefer } from '@/preferences.js';
 import { updateCurrentAccountPartial } from '@/accounts.js';
+import { useStream } from '@/stream.js';
+import { PendingSelfActions } from '@/utility/pending-self-action.js';
 
 const props = defineProps<{
 	announcementId: string;
@@ -105,15 +107,60 @@ async function read(target: Misskey.entities.Announcement): Promise<void> {
 	}
 }
 
-function onReactionsUpdate(reactions: Record<string, number>, myReactions: string[]) {
+// 他のユーザーがリアクションしたときにリアルタイムで反映する。
+// 自分自身がこのタブで行った操作は、対応するbroadcastが届いた時にPendingSelfActionsで判定して無視する
+// (userIdだけで判定すると、同じアカウントで開いている他のタブの反映まで無視してしまうため)
+const pendingSelfActions = new PendingSelfActions();
+
+function onReactionsUpdate(reactions: Record<string, number>, myReactions: string[], reaction: string, added: boolean) {
 	if (announcement.value == null) return;
 
+	pendingSelfActions.mark(`reaction:${announcement.value.id}:${reaction}:${added}`);
 	announcement.value = {
 		...announcement.value,
 		reactions,
 		myReactions,
 	};
 }
+
+const stream = useStream();
+
+function onAnnouncementReacted(payload: Misskey.entities.AnnouncementReacted) {
+	if (announcement.value == null || announcement.value.id !== payload.announcementId) return;
+	if (pendingSelfActions.consume(`reaction:${payload.announcementId}:${payload.reaction}:true`)) return;
+
+	announcement.value = {
+		...announcement.value,
+		reactions: {
+			...announcement.value.reactions,
+			[payload.reaction]: (announcement.value.reactions[payload.reaction] ?? 0) + 1,
+		},
+	};
+}
+
+function onAnnouncementUnreacted(payload: Misskey.entities.AnnouncementUnreacted) {
+	if (announcement.value == null || announcement.value.id !== payload.announcementId) return;
+	if (pendingSelfActions.consume(`reaction:${payload.announcementId}:${payload.reaction}:false`)) return;
+
+	const reactions = { ...announcement.value.reactions };
+	const count = (reactions[payload.reaction] ?? 0) - 1;
+	if (count > 0) {
+		reactions[payload.reaction] = count;
+	} else {
+		delete reactions[payload.reaction];
+	}
+	announcement.value = { ...announcement.value, reactions };
+}
+
+onMounted(() => {
+	stream.on('announcementReacted', onAnnouncementReacted);
+	stream.on('announcementUnreacted', onAnnouncementUnreacted);
+});
+
+onUnmounted(() => {
+	stream.off('announcementReacted', onAnnouncementReacted);
+	stream.off('announcementUnreacted', onAnnouncementUnreacted);
+});
 
 watch(() => path.value, _fetch_, { immediate: true });
 const headerActions = computed(() => []);

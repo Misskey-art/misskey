@@ -146,6 +146,7 @@ export function openInstanceMenu(ev: PointerEvent) {
 		icon: 'ti ti-shield-lock',
 		href: 'https://service.misskey.art',
 		target: '_blank',
+		badge: true,
 	});
 
 	if (instance.impressumUrl != null || instance.tosUrl != null || instance.privacyPolicyUrl != null) {

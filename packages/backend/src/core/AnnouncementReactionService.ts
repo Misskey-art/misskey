@@ -72,6 +72,19 @@ export class AnnouncementReactionService {
 	public async create(user: { id: MiUser['id']; host: MiUser['host'] }, announcement: MiAnnouncement, _reaction?: string | null): Promise<void> {
 		const reaction = await this.normalizeReaction(user, _reaction);
 
+		// misskey.art独自: 1件のお知らせに付けられるリアクションの種類数をロールポリシーで制限する。
+		// 既に付いている種類への追加(誰かがもう使っている絵文字への相乗り)は上限に関わらず許可する
+		const { announcementReactionTypeLimit } = await this.roleService.getUserPolicies(user.id);
+		const existingReactionTypes = await this.announcementReactionsRepository
+			.createQueryBuilder('reaction')
+			.select('DISTINCT reaction.reaction', 'reaction')
+			.where('reaction.announcementId = :announcementId', { announcementId: announcement.id })
+			.getRawMany<{ reaction: string }>();
+
+		if (!existingReactionTypes.some(r => r.reaction === reaction) && existingReactionTypes.length >= announcementReactionTypeLimit) {
+			throw new IdentifiableError('dc1dd554-8eee-4558-a6d6-9b325b993dde', 'Too many reaction types on that announcement.');
+		}
+
 		const record: MiAnnouncementReaction = {
 			id: this.idService.gen(),
 			announcementId: announcement.id,
