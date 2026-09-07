@@ -454,6 +454,26 @@ rt {
 	vertical-align: top;
 }
 
+// 本家(upstream)画面に混ざったmisskey.art独自の設定・タブ・メニュー項目であることを示すバッジ。
+// テーマ依存の--MI_THEME-*ではなく、Artブランドカラー(紫寄りの青)で固定する
+._art {
+	margin-left: 0.7em;
+	// font-size: 65%だと周囲のテキストサイズに引きずられ、大きい文字の場所(ボタン等)だけ
+	// バッジが縦に間延びして見えてしまうため、どこに置いても同じ大きさになる絶対値にする
+	font-size: 0.7rem;
+	line-height: 1.4;
+	padding: 1px 4px;
+	color: #a78bfa;
+	background: transparent;
+	border: solid 1px #a78bfa;
+	border-radius: 4px;
+	// vertical-align: middleはテキストのベースライン基準のため、周囲のフォントサイズが大きいと
+	// わずかに下寄りに見える。微調整として1pxだけ上に持ち上げる
+	vertical-align: middle;
+	transform: translateY(-1px);
+	display: inline-block;
+}
+
 ._table {
 	> ._row {
 		display: flex;
