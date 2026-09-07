@@ -9,7 +9,7 @@ import type { Index, Meilisearch } from 'meilisearch';
 import { type Config, loadConfig } from '@/config.js';
 import { GlobalModule } from '@/GlobalModule.js';
 import { CoreModule } from '@/core/CoreModule.js';
-import { SearchService } from '@/core/SearchService.js';
+import { buildPgroongaKeywordClauses, SearchService } from '@/core/SearchService.js';
 import { CacheService } from '@/core/CacheService.js';
 import { IdService } from '@/core/IdService.js';
 import { DI } from '@/di-symbols.js';
@@ -604,5 +604,34 @@ describe('SearchService', () => {
 		});
 
 		defineSearchNoteTests(() => ctx, { supportsFollowersVisibility: false, sinceIdOrder: 'desc' });
+	});
+});
+
+// pgroonga拡張が無いとDBレベルで`&@`演算子が使えずSearchService経由の実行テストができないため、
+// クエリ組み立てロジック(SQL文字列生成)だけをDB非依存で検証する
+describe('buildPgroongaKeywordClauses', () => {
+	test('builds one &@ clause per whitespace-separated keyword', () => {
+		const clauses = buildPgroongaKeywordClauses('foo bar');
+		expect(clauses).toEqual([
+			{ sql: 'note.text &@ :pgroongaKeyword0', param: { pgroongaKeyword0: 'foo' } },
+			{ sql: 'note.text &@ :pgroongaKeyword1', param: { pgroongaKeyword1: 'bar' } },
+		]);
+	});
+
+	test('does not throw or need escaping for query-syntax-like characters (the bug this fix avoids)', () => {
+		// `&@~`(旧実装)ではこれらの単語が構文エラーの原因になっていた。`&@`は単純な「含む」判定であり
+		// クエリ構文としてパースしないため、そのままバインドパラメータに渡してよい
+		const clauses = buildPgroongaKeywordClauses('-foo (bar) "baz" OR');
+		expect(clauses.map(c => c.param[Object.keys(c.param)[0]])).toEqual(['-foo', '(bar)', '"baz"', 'OR']);
+	});
+
+	test('collapses consecutive whitespace and trims', () => {
+		const clauses = buildPgroongaKeywordClauses('  foo   bar  ');
+		expect(clauses.map(c => c.param[Object.keys(c.param)[0]])).toEqual(['foo', 'bar']);
+	});
+
+	test('returns an empty array for an empty or whitespace-only query', () => {
+		expect(buildPgroongaKeywordClauses('')).toEqual([]);
+		expect(buildPgroongaKeywordClauses('   ')).toEqual([]);
 	});
 });
