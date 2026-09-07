@@ -469,6 +469,13 @@ type AnnouncementCreated = {
 };
 
 // @public (undocumented)
+type AnnouncementReacted = {
+    announcementId: string;
+    reaction: string;
+    userId: string;
+};
+
+// @public (undocumented)
 type AnnouncementReaction = components['schemas']['AnnouncementReaction'];
 
 // @public (undocumented)
@@ -494,6 +501,13 @@ type AnnouncementsShowRequest = operations['announcements___show']['requestBody'
 
 // @public (undocumented)
 type AnnouncementsShowResponse = operations['announcements___show']['responses']['200']['content']['application/json'];
+
+// @public (undocumented)
+type AnnouncementUnreacted = {
+    announcementId: string;
+    reaction: string;
+    userId: string;
+};
 
 // @public (undocumented)
 type Antenna = components['schemas']['Antenna'];
@@ -1538,6 +1552,8 @@ declare namespace entities {
         EmojiUpdated,
         EmojiDeleted,
         AnnouncementCreated,
+        AnnouncementReacted,
+        AnnouncementUnreacted,
         SignupRequest,
         SignupResponse,
         SignupPendingRequest,
@@ -3791,8 +3807,8 @@ type VerifyEmailRequest = operations['verify-email']['requestBody']['content']['
 // Warnings were encountered during analysis:
 //
 // src/streaming.ts:57:3 - (ae-forgotten-export) The symbol "ReconnectingWebSocket" needs to be exported by the entry point index.d.ts
-// src/streaming.types.ts:226:4 - (ae-forgotten-export) The symbol "ReversiUpdateKey" needs to be exported by the entry point index.d.ts
-// src/streaming.types.ts:241:4 - (ae-forgotten-export) The symbol "ReversiUpdateSettings" needs to be exported by the entry point index.d.ts
+// src/streaming.types.ts:228:4 - (ae-forgotten-export) The symbol "ReversiUpdateKey" needs to be exported by the entry point index.d.ts
+// src/streaming.types.ts:243:4 - (ae-forgotten-export) The symbol "ReversiUpdateSettings" needs to be exported by the entry point index.d.ts
 
 // (No @packageDocumentation comment for this package)
 
