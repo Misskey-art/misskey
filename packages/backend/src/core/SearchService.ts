@@ -48,6 +48,19 @@ export type SearchPagination = {
 	limit: number;
 };
 
+// `&@~`(PGroongaのクエリ構文演算子)はユーザー入力をそのままクエリ構文としてパースするため、
+// 単語に`-`や`(`等の記号が混ざっただけで構文エラーになりうる。単純な「含む」判定の`&@`演算子を
+// キーワードごとにAND連結することで、構文パースを経由せず(=構文エラーが起きえない)従来通りの
+// 複数キーワードAND検索を実現する。
+export function buildPgroongaKeywordClauses(q: string): { sql: string, param: Record<string, string> }[] {
+	return q.split(/\s+/)
+		.filter(keyword => keyword.length > 0)
+		.map((keyword, i) => ({
+			sql: `note.text &@ :pgroongaKeyword${i}`,
+			param: { [`pgroongaKeyword${i}`]: keyword },
+		}));
+}
+
 function compileValue(value: V): string {
 	if (typeof value === 'string') {
 		return `'${value}'`; // TODO: escape
@@ -221,7 +234,14 @@ export class SearchService {
 			.leftJoinAndSelect('renote.user', 'renoteUser');
 
 		if (this.config.fulltextSearch?.provider === 'sqlPgroonga') {
-			query.andWhere('note.text &@~ :q', { q });
+			const pgroongaClauses = buildPgroongaKeywordClauses(q);
+			if (pgroongaClauses.length === 0) {
+				query.andWhere('1=0');
+			} else {
+				for (const clause of pgroongaClauses) {
+					query.andWhere(clause.sql, clause.param);
+				}
+			}
 		} else {
 			query.andWhere('LOWER(note.text) LIKE :q', { q: `%${ sqlLikeEscape(q.toLowerCase()) }%` });
 		}
