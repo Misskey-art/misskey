@@ -1,5 +1,10 @@
 services:
   app:
+    # PID 1がsleep infinityのままだとSIGCHLDを回収せず、misskey-dev.serviceのpkillが
+    # 取りこぼした子プロセス(esbuild watch等)がPID 1に再親化されてゾンビのまま
+    # 溜まり続けてしまう。initを有効にしてDocker組み込みのtiniをPID 1に挟み、
+    # ゾンビを正しく回収させる(misskey-juiceの同じ問題を2026-09-16に修正した際に発覚)
+    init: true
     build:
       context: .
       dockerfile: Dockerfile
