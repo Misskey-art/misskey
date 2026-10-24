@@ -49,7 +49,7 @@ import MkModalWindow from '@/components/MkModalWindow.vue';
 import MkPagination from '@/components/MkPagination.vue';
 import MkUserCardMini from '@/components/MkUserCardMini.vue';
 import MkReactionIcon from '@/components/MkReactionIcon.vue';
-import { userPage } from '@/filters/user.js';
+import { userPage } from '@@/js/user.js';
 import { i18n } from '@/i18n.js';
 import { Paginator } from '@/utility/paginator.js';
 
