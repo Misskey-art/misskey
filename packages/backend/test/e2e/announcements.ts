@@ -107,4 +107,34 @@ describe('Announcements', () => {
 		assert.strictEqual(update.status, 400);
 		assert.strictEqual(castAsError(update.body as any).error.code, 'INVALID_AUTO_ARCHIVE_AT');
 	});
+
+	test('自動アーカイブ日時を過ぎたお知らせには、アーカイブのジョブが動く前でもリアクションできない', async () => {
+		const user = await signup({ username: 'reactor' });
+
+		const create = await api('admin/announcements/create', {
+			title: 'Reaction announcement',
+			text: 'Text',
+			imageUrl: null,
+			autoArchiveAt: Date.now() + 60_000,
+		}, admin);
+		assert.strictEqual(create.status, 200);
+		const id = create.body.id;
+
+		const reactBeforeExpiry = await api('announcements/reactions/create', { announcementId: id, reaction: '👍' }, user);
+		assert.strictEqual(reactBeforeExpiry.status, 204);
+
+		const update = await api('admin/announcements/update', {
+			id,
+			autoArchiveAt: Date.now() - 1_000,
+		}, admin);
+		assert.strictEqual(update.status, 204);
+
+		const reactAfterExpiry = await api('announcements/reactions/create', { announcementId: id, reaction: '🎉' }, user);
+		assert.strictEqual(reactAfterExpiry.status, 400);
+		assert.strictEqual(castAsError(reactAfterExpiry.body as any).error.code, 'NO_SUCH_ANNOUNCEMENT');
+
+		// 付けていたリアクションは、アーカイブされた後でも外せる
+		const unreact = await api('announcements/reactions/delete', { announcementId: id, reaction: '👍' }, user);
+		assert.strictEqual(unreact.status, 204);
+	});
 });
