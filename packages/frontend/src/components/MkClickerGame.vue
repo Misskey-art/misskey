@@ -7,7 +7,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 <div>
 	<div v-if="game.ready" :class="$style.game">
 		<div :class="$style.cps" class="">{{ number(cps) }}cps</div>
-		<div :class="$style.count" class="" data-testid="count"><i class="ti ti-cookie" style="font-size: 70%;"></i> {{ number(puddings) }}</div>
+		<div :class="$style.count" class="" data-testid="count"><MkEmoji emoji="🍮" style="font-size: 70%;"/> {{ number(puddings) }}</div>
 		<button v-click-anime class="_button" @click="onClick">
 			<img src="/client-assets/pudding.png" :class="$style.img">
 		</button>
@@ -44,9 +44,9 @@ function onClick(ev: PointerEvent) {
 	saveData.value!.totalHandmadePuddings++;
 	saveData.value!.clicked++;
 
-	if (puddings.value === 1) {
-		claimAchievement('puddingClicked');
-	}
+	// 改名前のクッキーの実績を持っている人や、既にプリンを持っている人も取れるよう、個数に関わらず請求する
+	// (取得済みならclaimAchievement側で何もしない)
+	claimAchievement('puddingClicked');
 }
 
 useInterval(() => {

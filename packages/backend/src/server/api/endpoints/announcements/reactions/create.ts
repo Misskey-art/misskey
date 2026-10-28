@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
+import ms from 'ms';
 import { Inject, Injectable } from '@nestjs/common';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { DI } from '@/di-symbols.js';
@@ -18,6 +19,12 @@ export const meta = {
 	prohibitMoved: true,
 
 	kind: 'write:reactions',
+
+	// 操作のたびにbroadcastストリームで接続中の全員へイベントを配信するため、連打できないようにする
+	limit: {
+		duration: ms('1hour'),
+		max: 60,
+	},
 
 	errors: {
 		noSuchAnnouncement: {
@@ -69,7 +76,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				isActive: true,
 			});
 
-			if (announcement == null) {
+			// 自動アーカイブ日時を過ぎたものは、アーカイブのジョブが動く前でもアーカイブ済みとして扱う
+			if (announcement == null || (announcement.autoArchiveAt != null && announcement.autoArchiveAt <= new Date())) {
 				throw new ApiError(meta.errors.noSuchAnnouncement);
 			}
 
