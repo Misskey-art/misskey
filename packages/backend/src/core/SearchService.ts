@@ -52,9 +52,12 @@ export type SearchPagination = {
 // 単語に`-`や`(`等の記号が混ざっただけで構文エラーになりうる。単純な「含む」判定の`&@`演算子を
 // キーワードごとにAND連結することで、構文パースを経由せず(=構文エラーが起きえない)従来通りの
 // 複数キーワードAND検索を実現する。
+// キーワードの数だけ全文検索の条件が増えるため、重複を除いたうえで先頭から一定数までに抑える。
+export const PGROONGA_MAX_KEYWORDS = 16;
+
 export function buildPgroongaKeywordClauses(q: string): { sql: string, param: Record<string, string> }[] {
-	return q.split(/\s+/)
-		.filter(keyword => keyword.length > 0)
+	return [...new Set(q.split(/\s+/).filter(keyword => keyword.length > 0))]
+		.slice(0, PGROONGA_MAX_KEYWORDS)
 		.map((keyword, i) => ({
 			sql: `note.text &@ :pgroongaKeyword${i}`,
 			param: { [`pgroongaKeyword${i}`]: keyword },
