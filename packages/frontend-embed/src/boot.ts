@@ -85,6 +85,8 @@ window.document.documentElement.style.maxWidth = '500px';
 
 // iframeIdの設定
 function setIframeIdHandler(event: MessageEvent) {
+	// 埋め込み元の親ウィンドウ以外からのメッセージでは設定しない
+	if (event.source !== window.parent) return;
 	if (event.data?.type === 'misskey:embedParent:registerIframeId' && event.data.payload?.iframeId != null) {
 		setIframeId(event.data.payload.iframeId);
 		window.removeEventListener('message', setIframeIdHandler);
