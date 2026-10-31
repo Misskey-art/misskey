@@ -36,6 +36,29 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 				<XServerRules/>
 
+				<!-- misskey.art独自: 「新しいアカウントからのフォローを承認制にする」の既定値 -->
+				<SearchMarker :keywords="['follow', 'approval', 'default', 'age']">
+					<MkFolder>
+						<template #icon><SearchIcon><i class="ti ti-user-check"></i></SearchIcon></template>
+						<template #label><SearchLabel>{{ i18n.ts._serverSettings.followApprovalDefault }}</SearchLabel><span class="_art">ART</span></template>
+
+						<div class="_gaps">
+							<div><SearchText>{{ i18n.ts._serverSettings.followApprovalDefaultDescription }}</SearchText></div>
+							<div v-for="setting in followApprovalDefaults" :key="setting.key" class="_gaps_s">
+								<MkInput v-model="setting.amount" type="number" :min="0" :max="FOLLOW_APPROVAL_MAX_SECONDS / FOLLOW_APPROVAL_UNIT_SECONDS[setting.unit]" step="any">
+									<template #label>{{ setting.label }}</template>
+									<template #suffix>{{ setting.unit === 'day' ? i18n.ts._time.day : i18n.ts._time.hour }}</template>
+									<template v-if="followApprovalDefaultToSeconds(setting) == null" #caption>{{ i18n.ts._serverSettings.followApprovalDefaultInvalid }}</template>
+								</MkInput>
+								<MkSelect :modelValue="setting.unit" :items="followApprovalUnits" @update:modelValue="unit => changeFollowApprovalDefaultUnit(setting, unit)">
+									<template #label>{{ i18n.tsx._serverSettings.followApprovalDefaultUnit({ target: setting.label }) }}</template>
+								</MkSelect>
+							</div>
+							<MkButton primary :disabled="followApprovalDefaults.some(setting => followApprovalDefaultToSeconds(setting) == null)" @click="save_followApprovalDefaults">{{ i18n.ts.save }}</MkButton>
+						</div>
+					</MkFolder>
+				</SearchMarker>
+
 				<SearchMarker :keywords="['preserved', 'usernames']">
 					<MkFolder>
 						<template #icon><SearchIcon><i class="ti ti-lock-star"></i></SearchIcon></template>
@@ -170,6 +193,8 @@ import MkButton from '@/components/MkButton.vue';
 import FormLink from '@/components/form/link.vue';
 import MkFolder from '@/components/MkFolder.vue';
 import MkSelect from '@/components/MkSelect.vue';
+import { FOLLOW_APPROVAL_MAX_SECONDS, FOLLOW_APPROVAL_UNIT_SECONDS, followApprovalPeriodFromSeconds, followApprovalPeriodToSeconds } from '@/utility/follow-approval.js';
+import type { FollowApprovalPeriodUnit } from '@/utility/follow-approval.js';
 
 const meta = await misskeyApi('admin/meta');
 
@@ -194,6 +219,41 @@ const preservedUsernames = ref(meta.preservedUsernames.join('\n'));
 const blockedHosts = ref(meta.blockedHosts.join('\n'));
 const silencedHosts = ref(meta.silencedHosts?.join('\n') ?? '');
 const mediaSilencedHosts = ref(meta.mediaSilencedHosts.join('\n'));
+
+// misskey.art独自: 「新しいアカウントからのフォローを承認制にする」の既定値。0は無効
+type FollowApprovalDefault = {
+	key: 'followApprovalDefaultLocalSeconds' | 'followApprovalDefaultRemoteSeconds';
+	label: string;
+	amount: number | null;
+	unit: FollowApprovalPeriodUnit;
+};
+
+function toFollowApprovalDefault(key: FollowApprovalDefault['key'], label: string, seconds: number): FollowApprovalDefault {
+	return seconds === 0 ? { key, label, amount: 0, unit: 'day' } : { key, label, ...followApprovalPeriodFromSeconds(seconds) };
+}
+
+const followApprovalDefaults = ref<FollowApprovalDefault[]>([
+	toFollowApprovalDefault('followApprovalDefaultLocalSeconds', i18n.ts._followApproval.local, meta.followApprovalDefaultLocalSeconds),
+	toFollowApprovalDefault('followApprovalDefaultRemoteSeconds', i18n.ts._followApproval.remote, meta.followApprovalDefaultRemoteSeconds),
+]);
+
+const followApprovalUnits = [
+	{ label: i18n.ts._time.hour, value: 'hour' },
+	{ label: i18n.ts._time.day, value: 'day' },
+];
+
+// 単位を変えたときは、同じ期間になるよう数値を換算する(7日 → 168時間)
+function changeFollowApprovalDefaultUnit(setting: FollowApprovalDefault, unit: FollowApprovalPeriodUnit) {
+	if (setting.amount != null && Number.isFinite(setting.amount)) {
+		setting.amount = Math.round(setting.amount * FOLLOW_APPROVAL_UNIT_SECONDS[setting.unit] / FOLLOW_APPROVAL_UNIT_SECONDS[unit] * 10000) / 10000;
+	}
+	setting.unit = unit;
+}
+
+function followApprovalDefaultToSeconds(setting: FollowApprovalDefault): number | null {
+	if (setting.amount === 0) return 0;
+	return followApprovalPeriodToSeconds(setting.amount, setting.unit);
+}
 
 async function onChange_enableRegistration(value: boolean) {
 	if (value) {
@@ -224,6 +284,17 @@ function onChange_emailRequiredForSignup(value: boolean) {
 function onChange_ugcVisibilityForVisitor(value: typeof ugcVisibilityForVisitor.value) {
 	os.apiWithDialog('admin/update-meta', {
 		ugcVisibilityForVisitor: value,
+	}).then(() => {
+		fetchInstance(true);
+	});
+}
+
+function save_followApprovalDefaults() {
+	const [local, remote] = followApprovalDefaults.value.map(followApprovalDefaultToSeconds);
+	if (local == null || remote == null) return;
+	os.apiWithDialog('admin/update-meta', {
+		followApprovalDefaultLocalSeconds: local,
+		followApprovalDefaultRemoteSeconds: remote,
 	}).then(() => {
 		fetchInstance(true);
 	});

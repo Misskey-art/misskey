@@ -16,6 +16,7 @@ import { LoggerService } from '@/core/LoggerService.js';
 import { bindThis } from '@/decorators.js';
 import { HttpRequestService } from '@/core/HttpRequestService.js';
 import { escapeHtml } from '@/misc/escape-html.js';
+import { DisposableEmailDomainService } from '@/core/DisposableEmailDomainService.js';
 
 @Injectable()
 export class EmailService {
@@ -34,6 +35,7 @@ export class EmailService {
 		private loggerService: LoggerService,
 		private utilityService: UtilityService,
 		private httpRequestService: HttpRequestService,
+		private disposableEmailDomainService: DisposableEmailDomainService,
 	) {
 		this.logger = this.loggerService.getLogger('email');
 	}
@@ -163,10 +165,13 @@ export class EmailService {
 		}
 	}
 
+	/**
+	 * @param exceptUserId メールアドレスの変更のときは、変更する本人を渡す(別名の判定で、本人の今のアドレスを使用済みとみなさないため)
+	 */
 	@bindThis
-	public async validateEmailForAccount(emailAddress: string): Promise<{
+	public async validateEmailForAccount(emailAddress: string, exceptUserId?: string): Promise<{
 		available: boolean;
-		reason: null | 'used' | 'format' | 'disposable' | 'mx' | 'smtp' | 'banned' | 'network' | 'blacklist';
+		reason: null | 'used' | 'format' | 'disposable' | 'mx' | 'smtp' | 'banned' | 'network' | 'blacklist' | 'plusTag' | 'gmailDot';
 	}> {
 		if (!this.utilityService.validateEmailFormat(emailAddress)) {
 			return {
@@ -175,15 +180,23 @@ export class EmailService {
 			};
 		}
 
-		const exist = await this.userProfilesRepository.countBy({
-			emailVerified: true,
-			email: emailAddress,
-		});
-
-		if (exist !== 0) {
+		if (await this.isEmailUsedByOtherAccount(emailAddress, exceptUserId)) {
 			return {
 				available: false,
 				reason: 'used',
+			};
+		}
+
+		// misskey.art独自: 使い捨てメールアドレスのドメインの一覧(disposable-email-domains)に載っていれば断る。
+		// 下の検証方式(verifymail.io・Truemail・deep-email-validator)のどれを使っていても、検証を使っていなくても動く。
+		// 一覧を読めないときは判定せずに先へ進む(登録を止めない)
+		if (await this.disposableEmailDomainService.isDisposable(emailAddress).catch((err) => {
+			this.logger.warn(`Failed to check the disposable email domain list: ${err}`);
+			return false;
+		})) {
+			return {
+				available: false,
+				reason: 'disposable',
 			};
 		}
 
@@ -193,21 +206,46 @@ export class EmailService {
 		} = { valid: true, reason: null };
 
 		if (this.meta.enableActiveEmailValidation) {
-			if (this.meta.enableVerifymailApi && this.meta.verifymailAuthKey != null) {
-				validated = await this.verifyMail(emailAddress, this.meta.verifymailAuthKey);
-			} else if (this.meta.enableTruemailApi && this.meta.truemailInstance && this.meta.truemailAuthKey != null) {
-				validated = await this.trueMail(this.meta.truemailInstance, emailAddress, this.meta.truemailAuthKey);
-			} else {
+			// 使い捨てメールアドレスの一覧で判定できているか(設定がオンでも、一覧をまだ取れていなければfalse)
+			const blocklistReady = await this.disposableEmailDomainService.isReady().catch(() => false);
+			const validateByDeepEmailValidator = async () => {
 				const { validate: validateEmail } = await import('deep-email-validator');
-				validated = await validateEmail({
+				return await validateEmail({
 					email: emailAddress,
 					validateRegex: true,
 					validateMx: true,
 					validateTypo: false, // TLDを見ているみたいだけどclubとか弾かれるので
-					validateDisposable: true, // 捨てアドかどうかチェック
+					// 捨てアドかどうかチェック。misskey.art独自: 使い捨てメールアドレスの一覧(上で判定済み)を使っているときは、
+					// 同梱の古い一覧では判定しない(管理画面の「使い捨てと判定しないドメイン」が効くように)
+					validateDisposable: !blocklistReady,
 					validateSMTP: false, // 日本だと25ポートが殆どのプロバイダーで塞がれていてタイムアウトになるので
 				});
+			};
+			if (this.meta.enableVerifymailApi && this.meta.verifymailAuthKey != null) {
+				// misskey.art独自: verifymail.ioに問い合わせられなかったとき(利用回数の上限で429が返る・落ちている等)は、
+				// 全ての登録・メールアドレス変更をエラーで止めずに、サーバー自身での検証(deep-email-validator)に切り替える
+				validated = await this.verifyMail(emailAddress, this.meta.verifymailAuthKey).catch(async (err) => {
+					// エラーの文には、問い合わせ先のURL(APIキーとメールアドレスを含む)が入ることがあるので、種類だけを記録する
+					const e = err as { statusCode?: number; code?: string; name?: string } | null;
+					const detail = e?.statusCode ?? e?.code ?? e?.name ?? 'unknown';
+					this.logger.warn(`verifymail.io request failed (${detail}), falling back to deep-email-validator`);
+					return await validateByDeepEmailValidator();
+				});
+			} else if (this.meta.enableTruemailApi && this.meta.truemailInstance && this.meta.truemailAuthKey != null) {
+				validated = await this.trueMail(this.meta.truemailInstance, emailAddress, this.meta.truemailAuthKey);
+				// misskey.art独自: Truemailに問い合わせられなかったとき(reasonが'network')も、同じくサーバー自身での検証に切り替える
+				if (!validated.valid && validated.reason === 'network') {
+					this.logger.warn('Truemail request failed, falling back to deep-email-validator');
+					validated = await validateByDeepEmailValidator();
+				}
+			} else {
+				validated = await validateByDeepEmailValidator();
 			}
+		}
+
+		// misskey.art独自: 管理画面の「使い捨てと判定しないドメイン」は、検証方式(verifymail.io等)が使い捨てと判定したときにも効かせる
+		if (!validated.valid && validated.reason === 'disposable' && this.disposableEmailDomainService.isAllowed(emailAddress)) {
+			validated = { valid: true, reason: null };
 		}
 
 		if (!validated.valid) {
@@ -236,10 +274,86 @@ export class EmailService {
 			};
 		}
 
+		// misskey.art独自: 管理画面で+タグを禁止しているときは、+を含むアドレスを既存のアカウントの有無に関係なく受け付けない
+		if (this.isPlusTagBlocked(emailAddress)) {
+			return {
+				available: false,
+				reason: 'plusTag',
+			};
+		}
+
+		// misskey.art独自: 同じく、Gmailのドット無視を禁止しているときは、@より前に.を含むGmailのアドレスを受け付けない
+		if (this.isGmailDotBlocked(emailAddress)) {
+			return {
+				available: false,
+				reason: 'gmailDot',
+			};
+		}
+
 		return {
 			available: true,
 			reason: null,
 		};
+	}
+
+	/**
+	 * misskey.art独自: そのメールアドレスが、確認済みのほかのアカウントで使われているか。管理画面の設定に応じて、
+	 * +タグ・Gmailのドット無視による別名も同じアドレスとみなす。
+	 * 登録・メールアドレス変更の受付時だけでなく、確認のリンクを開いたとき(アカウントを作る・確認済みにする直前)にも呼ぶ。
+	 * 受付時は、まだ確認していない登録・変更を数えないため、確認前のものを複数並べると素通りしてしまうので
+	 */
+	@bindThis
+	public async isEmailUsedByOtherAccount(emailAddress: string, exceptUserId?: string): Promise<boolean> {
+		const foldDots = this.meta.blockEmailDotAliasRegistration;
+		const stripPlusTag = this.meta.blockEmailPlusAliasRegistration;
+
+		const query = this.userProfilesRepository.createQueryBuilder('profile')
+			.where('profile.emailVerified = true');
+
+		if (!foldDots && !stripPlusTag) {
+			query.andWhere('profile.email = :emailAddress', { emailAddress });
+		} else {
+			// email-address/available は認証無しで呼べるため、確認済みのアドレスを全部アプリ側に持ってきて比べず、
+			// 正規化(ドット除去・+タグ除去)をSQLで再現してDBの中で判定する。対象ドメインの一覧はUtilityServiceと共有する
+			const normalizedCandidate = this.utilityService.normalizeEmailForDedup(emailAddress, { foldDots, stripPlusTag });
+			const localPart = stripPlusTag
+				? `regexp_replace(split_part(profile.email, '@', 1), '\\+.*$', '')`
+				: `split_part(profile.email, '@', 1)`;
+			const domainPart = `lower(split_part(profile.email, '@', 2))`;
+			const normalizedLocalPart = foldDots
+				? `(CASE WHEN ${domainPart} = ANY(:dotFoldingDomains) THEN replace(${localPart}, '.', '') ELSE ${localPart} END)`
+				: localPart;
+			query
+				.andWhere('profile.email IS NOT NULL')
+				.andWhere(`lower(${normalizedLocalPart} || '@' || ${domainPart}) = :normalizedCandidate`, {
+					...(foldDots ? { dotFoldingDomains: this.utilityService.dotFoldingEmailDomains } : {}),
+					normalizedCandidate,
+				});
+		}
+
+		if (exceptUserId != null) query.andWhere('profile.userId != :exceptUserId', { exceptUserId });
+
+		return (await query.getCount()) !== 0;
+	}
+
+	/**
+	 * misskey.art独自: 管理画面の設定で、+タグを含むメールアドレスを禁止していて、このアドレスのローカルパートに+があるか
+	 */
+	@bindThis
+	public isPlusTagBlocked(emailAddress: string): boolean {
+		const atIndex = emailAddress.lastIndexOf('@');
+		return this.meta.blockEmailPlusAliasRegistration && atIndex !== -1 && emailAddress.slice(0, atIndex).includes('+');
+	}
+
+	/**
+	 * misskey.art独自: 管理画面の設定で、Gmailのドット無視による別名を禁止していて、このアドレスが@より前に.を含むGmail(Googlemail)のアドレスか
+	 */
+	@bindThis
+	public isGmailDotBlocked(emailAddress: string): boolean {
+		const atIndex = emailAddress.lastIndexOf('@');
+		if (!this.meta.blockEmailDotAliasRegistration || atIndex === -1) return false;
+		const domain = emailAddress.slice(atIndex + 1).toLowerCase();
+		return this.utilityService.dotFoldingEmailDomains.includes(domain) && emailAddress.slice(0, atIndex).includes('.');
 	}
 
 	private async verifyMail(emailAddress: string, verifymailAuthKey: string): Promise<{
@@ -275,10 +389,9 @@ export class EmailService {
 
 		/* api error: when there is only one `message` attribute in the returned result */
 		if (Object.keys(json).length === 1 && Reflect.has(json, 'message')) {
-			return {
-				valid: false,
-				reason: null,
-			};
+			// misskey.art独自: APIのエラー(キーが無効・利用回数の上限など)は、全てのアドレスを無効にせず、例外にして呼び出し側で
+			// サーバー自身での検証に切り替える(エラーの文は、キーなどを含まないよう記録しない)
+			throw Object.assign(new Error('verifymail.io returned an API error'), { code: 'VERIFYMAIL_API_ERROR' });
 		}
 		if (json.email_address === undefined) {
 			return {

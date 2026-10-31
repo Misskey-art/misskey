@@ -9,6 +9,8 @@ import type { MiMeta } from '@/models/Meta.js';
 import { ModerationLogService } from '@/core/ModerationLogService.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { MetaService } from '@/core/MetaService.js';
+import { DisposableEmailDomainService, normalizeDisposableEmailAllowDomains } from '@/core/DisposableEmailDomainService.js';
+import { FOLLOW_APPROVAL_MAX_SECONDS } from '@/misc/should-require-follow-approval-by-account-age.js';
 
 export const meta = {
 	tags: ['admin'],
@@ -154,6 +156,12 @@ export const paramDef = {
 		enableIdenticonGeneration: { type: 'boolean' },
 		serverRules: { type: 'array', items: { type: 'string' } },
 		bannedEmailDomains: { type: 'array', items: { type: 'string' } },
+		disposableEmailBlocklistEnabled: { type: 'boolean' },
+		disposableEmailAllowDomains: { type: 'array', maxItems: 1000, items: { type: 'string', maxLength: 253 } },
+		blockEmailDotAliasRegistration: { type: 'boolean' },
+		blockEmailPlusAliasRegistration: { type: 'boolean' },
+		followApprovalDefaultLocalSeconds: { type: 'integer', minimum: 0, maximum: FOLLOW_APPROVAL_MAX_SECONDS },
+		followApprovalDefaultRemoteSeconds: { type: 'integer', minimum: 0, maximum: FOLLOW_APPROVAL_MAX_SECONDS },
 		preservedUsernames: { type: 'array', items: { type: 'string' } },
 		manifestJsonOverride: { type: 'string' },
 		enableFanoutTimeline: { type: 'boolean' },
@@ -240,6 +248,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 		private metaService: MetaService,
 		private moderationLogService: ModerationLogService,
+		private disposableEmailDomainService: DisposableEmailDomainService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			const set = {} as Partial<MiMeta>;
@@ -710,6 +719,31 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				set.bannedEmailDomains = ps.bannedEmailDomains;
 			}
 
+			if (ps.disposableEmailBlocklistEnabled !== undefined) {
+				set.disposableEmailBlocklistEnabled = ps.disposableEmailBlocklistEnabled;
+			}
+
+			if (ps.disposableEmailAllowDomains !== undefined) {
+				// 小文字・重複なし・形の正しいものだけにして保存する
+				set.disposableEmailAllowDomains = normalizeDisposableEmailAllowDomains(ps.disposableEmailAllowDomains);
+			}
+
+			if (ps.blockEmailDotAliasRegistration !== undefined) {
+				set.blockEmailDotAliasRegistration = ps.blockEmailDotAliasRegistration;
+			}
+
+			if (ps.blockEmailPlusAliasRegistration !== undefined) {
+				set.blockEmailPlusAliasRegistration = ps.blockEmailPlusAliasRegistration;
+			}
+
+			if (ps.followApprovalDefaultLocalSeconds !== undefined) {
+				set.followApprovalDefaultLocalSeconds = ps.followApprovalDefaultLocalSeconds;
+			}
+
+			if (ps.followApprovalDefaultRemoteSeconds !== undefined) {
+				set.followApprovalDefaultRemoteSeconds = ps.followApprovalDefaultRemoteSeconds;
+			}
+
 			if (ps.urlPreviewEnabled !== undefined) {
 				set.urlPreviewEnabled = ps.urlPreviewEnabled;
 			}
@@ -797,6 +831,15 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			await this.metaService.update(set);
 
 			const after = await this.metaService.fetch(true);
+
+			// misskey.art独自: 使い捨てメールアドレスの一覧をオンにしたら、すぐに一覧を取りに行く。管理画面に一覧の状態をすぐ出せるよう、
+			// 少しだけ待つ(取れなくても・間に合わなくても、設定の保存は成功にする)
+			if (ps.disposableEmailBlocklistEnabled === true && !before.disposableEmailBlocklistEnabled) {
+				await Promise.race([
+					this.disposableEmailDomainService.refresh().catch(() => {}),
+					new Promise(resolve => setTimeout(resolve, 8000)),
+				]);
+			}
 
 			this.moderationLogService.log(me, 'updateServerSettings', {
 				before,

@@ -589,6 +589,43 @@ export class MiMeta {
 	})
 	public bannedEmailDomains: string[];
 
+	// misskey.art独自: 使い捨てメールアドレスのドメインの一覧(disposable-email-domains)で、新規登録・メールアドレス変更を断るか
+	@Column('boolean', {
+		default: false,
+	})
+	public disposableEmailBlocklistEnabled: boolean;
+
+	// misskey.art独自: 使い捨てメールアドレスの一覧に載っていても、使い捨てと判定しないドメイン(サブドメインを含む)
+	@Column('varchar', {
+		length: 1024,
+		array: true,
+		default: '{}',
+	})
+	public disposableEmailAllowDomains: string[];
+
+	// misskey.art独自: @より前に.を含むGmail(Googlemail)のアドレスを受け付けず、.を除くと同じになるアドレスを重複として扱うか
+	@Column('boolean', {
+		default: false,
+	})
+	public blockEmailDotAliasRegistration: boolean;
+
+	// misskey.art独自: +タグを含むアドレスを受け付けず、+より前が同じアドレスを重複として扱うか
+	@Column('boolean', {
+		default: false,
+	})
+	public blockEmailPlusAliasRegistration: boolean;
+
+	// misskey.art独自: 「新しいアカウントからのフォローを承認制にする」で「既定値を使う」にしているユーザーの期間(秒)。0なら無効
+	@Column('integer', {
+		default: 0,
+	})
+	public followApprovalDefaultLocalSeconds: number;
+
+	@Column('integer', {
+		default: 0,
+	})
+	public followApprovalDefaultRemoteSeconds: number;
+
 	@Column('varchar', {
 		length: 1024, array: true, default: ['admin', 'administrator', 'root', 'system', 'maintainer', 'host', 'mod', 'moderator', 'owner', 'superuser', 'staff', 'auth', 'i', 'me', 'everyone', 'all', 'mention', 'mentions', 'example', 'user', 'users', 'account', 'accounts', 'official', 'help', 'helps', 'support', 'supports', 'info', 'information', 'informations', 'announce', 'announces', 'announcement', 'announcements', 'notice', 'notification', 'notifications', 'dev', 'developer', 'developers', 'tech', 'misskey'],
 	})

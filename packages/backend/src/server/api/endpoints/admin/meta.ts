@@ -10,6 +10,7 @@ import type { Config } from '@/config.js';
 import { DI } from '@/di-symbols.js';
 import { DEFAULT_POLICIES } from '@/core/RoleService.js';
 import { SystemAccountService } from '@/core/SystemAccountService.js';
+import { DisposableEmailDomainService } from '@/core/DisposableEmailDomainService.js';
 
 export const meta = {
 	tags: ['meta'],
@@ -196,6 +197,44 @@ export const meta = {
 					type: 'string',
 					optional: false, nullable: false,
 				},
+			},
+			disposableEmailBlocklistEnabled: {
+				type: 'boolean',
+				optional: false, nullable: false,
+			},
+			disposableEmailAllowDomains: {
+				type: 'array',
+				optional: false, nullable: false,
+				items: {
+					type: 'string',
+					optional: false, nullable: false,
+				},
+			},
+			// 使い捨てメールアドレスのドメインの一覧の状態(件数と、取ってきた日時。オフのとき・まだ取っていなければ0・null)
+			disposableEmailBlocklistCount: {
+				type: 'number',
+				optional: false, nullable: false,
+			},
+			disposableEmailBlocklistFetchedAt: {
+				type: 'string',
+				optional: false, nullable: true,
+				format: 'date-time',
+			},
+			blockEmailDotAliasRegistration: {
+				type: 'boolean',
+				optional: false, nullable: false,
+			},
+			blockEmailPlusAliasRegistration: {
+				type: 'boolean',
+				optional: false, nullable: false,
+			},
+			followApprovalDefaultLocalSeconds: {
+				type: 'integer',
+				optional: false, nullable: false,
+			},
+			followApprovalDefaultRemoteSeconds: {
+				type: 'integer',
+				optional: false, nullable: false,
 			},
 			preservedUsernames: {
 				type: 'array',
@@ -639,9 +678,15 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 		private metaService: MetaService,
 		private systemAccountService: SystemAccountService,
+		private disposableEmailDomainService: DisposableEmailDomainService,
 	) {
 		super(meta, paramDef, async () => {
 			const instance = await this.metaService.fetch(true);
+
+			// 一覧の状態は、使っているときだけ出す(オフの間は、前に取った一覧が残っていても0件・未取得とする)
+			const disposableEmailBlocklistStatus = instance.disposableEmailBlocklistEnabled
+				? await this.disposableEmailDomainService.status()
+				: { count: 0, fetchedAt: null };
 
 			const proxy = await this.systemAccountService.fetch('proxy');
 
@@ -750,6 +795,14 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				enableServerMachineStats: instance.enableServerMachineStats,
 				enableIdenticonGeneration: instance.enableIdenticonGeneration,
 				bannedEmailDomains: instance.bannedEmailDomains,
+				disposableEmailBlocklistEnabled: instance.disposableEmailBlocklistEnabled,
+				disposableEmailAllowDomains: instance.disposableEmailAllowDomains,
+				disposableEmailBlocklistCount: disposableEmailBlocklistStatus.count,
+				disposableEmailBlocklistFetchedAt: disposableEmailBlocklistStatus.fetchedAt,
+				blockEmailDotAliasRegistration: instance.blockEmailDotAliasRegistration,
+				blockEmailPlusAliasRegistration: instance.blockEmailPlusAliasRegistration,
+				followApprovalDefaultLocalSeconds: instance.followApprovalDefaultLocalSeconds,
+				followApprovalDefaultRemoteSeconds: instance.followApprovalDefaultRemoteSeconds,
 				policies: { ...DEFAULT_POLICIES, ...instance.policies },
 				manifestJsonOverride: instance.manifestJsonOverride,
 				enableFanoutTimeline: instance.enableFanoutTimeline,

@@ -13,7 +13,7 @@ import PerUserFollowingChart from '@/core/chart/charts/per-user-following.js';
 import { GlobalEventService } from '@/core/GlobalEventService.js';
 import { IdService } from '@/core/IdService.js';
 import { isDuplicateKeyValueError } from '@/misc/is-duplicate-key-value-error.js';
-import { shouldRequireFollowApprovalByAccountAge } from '@/misc/should-require-follow-approval-by-account-age.js';
+import { applyFollowApprovalDefaults, shouldRequireFollowApprovalByAccountAge } from '@/misc/should-require-follow-approval-by-account-age.js';
 import InstanceChart from '@/core/chart/charts/instance.js';
 import { FederatedInstanceService } from '@/core/FederatedInstanceService.js';
 import { UserWebhookService } from '@/core/UserWebhookService.js';
@@ -163,7 +163,8 @@ export class UserFollowingService implements OnModuleInit {
 
 		const followeeProfile = await this.userProfilesRepository.findOneByOrFail({ userId: followee.id });
 		const requiresApprovalByAccountAge = this.userEntityService.isLocalUser(followee) && shouldRequireFollowApprovalByAccountAge(
-			followeeProfile,
+			// misskey.art独自: 「既定値を使う」にしているユーザーには、管理画面で決めた既定値を使う
+			applyFollowApprovalDefaults(followeeProfile, this.meta),
 			this.userEntityService.isRemoteUser(follower),
 			// For remote users, the ID records when this server first discovered them.
 			this.idService.parse(follower.id).date,
@@ -647,7 +648,8 @@ export class UserFollowingService implements OnModuleInit {
 			}
 
 			if (shouldRequireFollowApprovalByAccountAge(
-				profile,
+				// misskey.art独自: 「既定値を使う」にしているユーザーには、管理画面で決めた既定値を使う
+				applyFollowApprovalDefaults(profile, this.meta),
 				this.userEntityService.isRemoteUser(follower),
 				this.idService.parse(follower.id).date,
 			)) {

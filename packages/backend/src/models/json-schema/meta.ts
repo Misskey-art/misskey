@@ -82,6 +82,15 @@ export const packedMetaLiteSchema = {
 			type: 'boolean',
 			optional: false, nullable: false,
 		},
+		// misskey.art独自: 「新しいアカウントからのフォローを承認制にする」で「既定値を使う」にしているときの期間(秒)。0なら無効
+		followApprovalDefaultLocalSeconds: {
+			type: 'integer',
+			optional: false, nullable: false,
+		},
+		followApprovalDefaultRemoteSeconds: {
+			type: 'integer',
+			optional: false, nullable: false,
+		},
 		enableHcaptcha: {
 			type: 'boolean',
 			optional: false, nullable: false,

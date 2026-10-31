@@ -41,6 +41,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<span v-else-if="emailState === 'unavailable:banned'" style="color: var(--MI_THEME-error)"><i class="ti ti-alert-triangle ti-fw"></i> {{ i18n.ts._emailUnavailable.banned }}</span>
 					<span v-else-if="emailState === 'unavailable:mx'" style="color: var(--MI_THEME-error)"><i class="ti ti-alert-triangle ti-fw"></i> {{ i18n.ts._emailUnavailable.mx }}</span>
 					<span v-else-if="emailState === 'unavailable:smtp'" style="color: var(--MI_THEME-error)"><i class="ti ti-alert-triangle ti-fw"></i> {{ i18n.ts._emailUnavailable.smtp }}</span>
+					<span v-else-if="emailState === 'unavailable:plusTag'" style="color: var(--MI_THEME-error)"><i class="ti ti-alert-triangle ti-fw"></i> {{ i18n.ts._emailUnavailable.plusTag }}</span>
+					<span v-else-if="emailState === 'unavailable:gmailDot'" style="color: var(--MI_THEME-error)"><i class="ti ti-alert-triangle ti-fw"></i> {{ i18n.ts._emailUnavailable.gmailDot }}</span>
 					<span v-else-if="emailState === 'unavailable'" style="color: var(--MI_THEME-error)"><i class="ti ti-alert-triangle ti-fw"></i> {{ i18n.ts.unavailable }}</span>
 					<span v-else-if="emailState === 'error'" style="color: var(--MI_THEME-error)"><i class="ti ti-alert-triangle ti-fw"></i> {{ i18n.ts.error }}</span>
 				</template>
@@ -118,7 +120,7 @@ const retypedPassword = ref<string>('');
 const invitationCode = ref<string>('');
 const email = ref('');
 const usernameState = ref<null | 'wait' | 'ok' | 'unavailable' | 'error' | 'invalid-format' | 'min-range' | 'max-range'>(null);
-const emailState = ref<null | 'wait' | 'ok' | 'unavailable:used' | 'unavailable:format' | 'unavailable:disposable' | 'unavailable:banned' | 'unavailable:mx' | 'unavailable:smtp' | 'unavailable' | 'error'>(null);
+const emailState = ref<null | 'wait' | 'ok' | 'unavailable:used' | 'unavailable:format' | 'unavailable:disposable' | 'unavailable:banned' | 'unavailable:mx' | 'unavailable:smtp' | 'unavailable:plusTag' | 'unavailable:gmailDot' | 'unavailable' | 'error'>(null);
 const passwordStrength = ref<'' | 'low' | 'medium' | 'high'>('');
 const passwordRetypeState = ref<null | 'match' | 'not-match'>(null);
 const submitting = ref<boolean>(false);
@@ -225,6 +227,8 @@ function onChangeEmail(): void {
 			result.reason === 'banned' ? 'unavailable:banned' :
 			result.reason === 'mx' ? 'unavailable:mx' :
 			result.reason === 'smtp' ? 'unavailable:smtp' :
+			result.reason === 'plusTag' ? 'unavailable:plusTag' :
+			result.reason === 'gmailDot' ? 'unavailable:gmailDot' :
 			'unavailable';
 	}).catch((err) => {
 		if (err.name !== 'AbortError') {

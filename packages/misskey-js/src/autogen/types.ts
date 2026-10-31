@@ -5531,6 +5531,8 @@ export type components = {
             clientOptions: components['schemas']['MetaClientOptions'];
             disableRegistration: boolean;
             emailRequiredForSignup: boolean;
+            followApprovalDefaultLocalSeconds: number;
+            followApprovalDefaultRemoteSeconds: number;
             enableHcaptcha: boolean;
             hcaptchaSiteKey: string | null;
             enableMcaptcha: boolean;
@@ -9511,6 +9513,15 @@ export interface operations {
                         prohibitedWords: string[];
                         prohibitedWordsForNameOfUser: string[];
                         bannedEmailDomains?: string[];
+                        disposableEmailBlocklistEnabled: boolean;
+                        disposableEmailAllowDomains: string[];
+                        disposableEmailBlocklistCount: number;
+                        /** Format: date-time */
+                        disposableEmailBlocklistFetchedAt: string | null;
+                        blockEmailDotAliasRegistration: boolean;
+                        blockEmailPlusAliasRegistration: boolean;
+                        followApprovalDefaultLocalSeconds: number;
+                        followApprovalDefaultRemoteSeconds: number;
                         preservedUsernames: string[];
                         hcaptchaSecretKey: string | null;
                         mcaptchaSecretKey: string | null;
@@ -13102,6 +13113,12 @@ export interface operations {
                     enableIdenticonGeneration?: boolean;
                     serverRules?: string[];
                     bannedEmailDomains?: string[];
+                    disposableEmailBlocklistEnabled?: boolean;
+                    disposableEmailAllowDomains?: string[];
+                    blockEmailDotAliasRegistration?: boolean;
+                    blockEmailPlusAliasRegistration?: boolean;
+                    followApprovalDefaultLocalSeconds?: number;
+                    followApprovalDefaultRemoteSeconds?: number;
                     preservedUsernames?: string[];
                     manifestJsonOverride?: string;
                     enableFanoutTimeline?: boolean;

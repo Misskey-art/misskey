@@ -5082,6 +5082,14 @@ export interface Locale extends ILocale {
      */
     "emailVerificationFailedError": string;
     /**
+     * このメールアドレス(または同じアドレスとみなされる別名)は、ほかのアカウントで使われています。
+     */
+    "emailAlreadyUsedByOtherAccount": string;
+    /**
+     * このメールアドレスは、このサーバーでは使えません。
+     */
+    "emailNotAllowedOnThisServer": string;
+    /**
      * 「内容を隠す」がオンの場合は注釈の記述が必要です。
      */
     "cwNotationRequired": string;
@@ -6412,6 +6420,14 @@ export interface Locale extends ILocale {
          */
         "useDefault": string;
         /**
+         * 既定値を使う（現在は{n}日）
+         */
+        "useDefaultDays": ParameterizedString<"n">;
+        /**
+         * 既定値を使う（現在は{n}時間）
+         */
+        "useDefaultHours": ParameterizedString<"n">;
+        /**
          * 期間を指定する
          */
         "custom": string;
@@ -7128,6 +7144,74 @@ export interface Locale extends ILocale {
          * アクティビティを表示する
          */
         "showActivitiesForVisitor": string;
+        /**
+         * 登録に使えるメールアドレスの制限
+         */
+        "signupEmailRestrictions": string;
+        /**
+         * 新規登録とメールアドレスの変更で、使い捨てのアドレスや、同じアドレスの別名を断ります。確認のリンクを開いたときにも、もう一度確かめます。
+         */
+        "signupEmailRestrictionsDescription": string;
+        /**
+         * 使い捨てメールアドレスを使えないようにする
+         */
+        "disposableEmailBlocklistEnabled": string;
+        /**
+         * 使い捨てメールアドレスのドメインの一覧に載っているアドレス(サブドメインを含む)を受け付けません。「Active Email Validation」の設定に関係なく動きます。一覧は1日に1回取り直し、取れなかったときは前の一覧を使い続けます。一覧:
+         */
+        "disposableEmailBlocklistEnabledCaption": string;
+        /**
+         * 今の一覧: {n}件、取得:
+         */
+        "disposableEmailBlocklistStatus": ParameterizedString<"n">;
+        /**
+         * 一覧はまだ取得していません(オンにして保存すると取得します。取得できるまでは判定しません)
+         */
+        "disposableEmailBlocklistNotFetched": string;
+        /**
+         * 一覧をまだ取得できていません。取得できるまでは判定せず、あとでもう一度取りに行きます。
+         */
+        "disposableEmailBlocklistFetchFailed": string;
+        /**
+         * 使い捨てと判定しないドメイン
+         */
+        "disposableEmailAllowDomains": string;
+        /**
+         * 1行に1つ、ドメインを入れます(例: example.com)。一覧に載っていても、ここに入れたドメインとそのサブドメインは受け付けます。誤って一覧に載っているドメインを外すのに使います。「Active Email Validation」が使い捨てと判定したときにも効きます。
+         */
+        "disposableEmailAllowDomainsCaption": string;
+        /**
+         * Gmailで、@より前に「.」を含むアドレスを使えないようにする
+         */
+        "blockEmailDotAliasRegistration": string;
+        /**
+         * @より前に.を含むGmailのアドレス(ex.ample@gmail.com など)を、既存のアカウントの有無に関係なく受け付けません。あわせて、.を除くと同じになるGmailのアドレスも重複として扱います。対象はGmail/Googlemailだけなので、ほかのプロバイダのアドレスには影響しません。
+         */
+        "blockEmailDotAliasRegistrationCaption": string;
+        /**
+         * @より前に「+」を含むアドレスを使えないようにする
+         */
+        "blockEmailPlusAliasRegistration": string;
+        /**
+         * +タグを含むアドレス(example+1@gmail.com など)を、既存のアカウントの有無に関係なく受け付けません。あわせて、+タグを除くと同じになるアドレス(example+1@gmail.com と example@gmail.com など)も、重複として扱います。
+         */
+        "blockEmailPlusAliasRegistrationCaption": string;
+        /**
+         * 新しいアカウントからのフォローを承認制にする期間の既定値
+         */
+        "followApprovalDefault": string;
+        /**
+         * ユーザーが「新しいアカウントからのフォローを承認制にする」で「既定値を使う」にしているときの期間です。0にすると無効になります。上限は30日です。
+         */
+        "followApprovalDefaultDescription": string;
+        /**
+         * 0(無効)か、1秒から30日までの期間を入れてください。
+         */
+        "followApprovalDefaultInvalid": string;
+        /**
+         * {target}の単位
+         */
+        "followApprovalDefaultUnit": ParameterizedString<"target">;
         "_userGeneratedContentsVisibilityForVisitor": {
             /**
              * 全て公開
@@ -8564,6 +8648,14 @@ export interface Locale extends ILocale {
          * このメールアドレスでは登録できません
          */
         "banned": string;
+        /**
+         * +を含むメールアドレスは使えません
+         */
+        "plusTag": string;
+        /**
+         * Gmailでは、@より前に.を含むメールアドレスは使えません
+         */
+        "gmailDot": string;
     };
     "_ffVisibility": {
         /**

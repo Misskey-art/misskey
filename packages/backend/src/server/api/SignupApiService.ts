@@ -347,6 +347,19 @@ export class SignupApiService {
 				throw new FastifyReplyError(400, 'EXPIRED');
 			}
 
+			// misskey.art独自: 登録を受け付けた後に、同じ(別名を含む)メールアドレスのアカウントが確認済みになっていたら作らない。
+			// 受付時は確認前の登録を数えないため、+タグ等の別名で複数登録してから順に確認すると、重複を防げないので。
+			// 受付の後に管理画面で+タグ・Gmailのドットを禁止した場合も、ここで断る
+			const rejection = await this.emailService.isEmailUsedByOtherAccount(pendingUser.email) ? 'USED_EMAIL'
+				: this.emailService.isPlusTagBlocked(pendingUser.email) || this.emailService.isGmailDotBlocked(pendingUser.email) ? 'UNAVAILABLE_EMAIL'
+				: null;
+			if (rejection != null) {
+				await this.userPendingsRepository.delete({ id: pendingUser.id });
+				const pendingTicket = await this.registrationTicketsRepository.findOneBy({ pendingUserId: pendingUser.id });
+				if (pendingTicket) await this.releaseRegistrationTicket(pendingTicket);
+				throw new FastifyReplyError(400, rejection);
+			}
+
 			const { account } = await this.signupService.signup({
 				username: pendingUser.username,
 				passwordHash: pendingUser.password,
