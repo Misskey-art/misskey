@@ -25,15 +25,15 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<template v-for="(item, i) in group.items">
 					<a v-if="item.type === 'a'" :href="item.href" :target="item.target" class="_button item" :class="{ danger: item.danger, active: item.active }">
 						<span v-if="item.icon" class="icon"><i :class="item.icon" class="ti-fw"></i></span>
-						<span class="text">{{ item.text }}</span>
+						<span class="text">{{ item.text }}<span v-if="item.badge" class="_art">ART</span></span>
 					</a>
 					<button v-else-if="item.type === 'button'" class="_button item" :class="{ danger: item.danger, active: item.active }" :disabled="item.active" @click="ev => item.action(ev)">
 						<span v-if="item.icon" class="icon"><i :class="item.icon" class="ti-fw"></i></span>
-						<span class="text">{{ item.text }}</span>
+						<span class="text">{{ item.text }}<span v-if="item.badge" class="_art">ART</span></span>
 					</button>
 					<MkA v-else :to="item.to" class="_button item" :class="{ danger: item.danger, active: item.active }">
 						<span v-if="item.icon" class="icon"><i :class="item.icon" class="ti-fw"></i></span>
-						<span class="text">{{ item.text }}</span>
+						<span class="text">{{ item.text }}<span v-if="item.badge" class="_art">ART</span></span>
 					</MkA>
 				</template>
 			</div>
@@ -76,12 +76,16 @@ export type SuperMenuDef = {
 		text: string;
 		danger?: boolean;
 		active?: boolean;
+		/** 本家に無いmisskey.art独自の項目であることを示すバッジを表示する */
+		badge?: boolean;
 	} | {
 		type: 'button';
 		icon?: string;
 		text: string;
 		danger?: boolean;
 		active?: boolean;
+		/** 本家に無いmisskey.art独自の項目であることを示すバッジを表示する */
+		badge?: boolean;
 		action: (ev: PointerEvent) => Awaitable<void>;
 	} | {
 		type?: 'link';
@@ -90,6 +94,8 @@ export type SuperMenuDef = {
 		text: string;
 		danger?: boolean;
 		active?: boolean;
+		/** 本家に無いmisskey.art独自の項目であることを示すバッジを表示する */
+		badge?: boolean;
 	})[];
 };
 </script>

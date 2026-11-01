@@ -34,6 +34,7 @@ export type Keys = (
 	'latestPreferencesUpdate' |
 	'hidePreferencesRestoreSuggestion' |
 	'isSafeMode' |
+	'signupApprovalCheckCodes' | // misskey.art独自: 承認制の新規登録で発行された確認コード
 	`miux:${string}` |
 	`ui:folder:${string}` |
 	`themes:${string}` | // DEPRECATED

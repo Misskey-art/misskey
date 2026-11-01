@@ -12,8 +12,8 @@ import { api, signup } from '../utils.js';
 import type * as misskey from 'misskey-js';
 
 describe('ReversiGame', () => {
-	let alice: misskey.entities.SignupResponse;
-	let bob: misskey.entities.SignupResponse;
+	let alice: misskey.entities.SignupSuccessResponse;
+	let bob: misskey.entities.SignupSuccessResponse;
 
 	beforeAll(async () => {
 		alice = await signup({ username: 'alice' });

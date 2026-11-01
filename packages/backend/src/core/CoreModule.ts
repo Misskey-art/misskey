@@ -70,6 +70,7 @@ import { UserAuthService } from './UserAuthService.js';
 import { VideoProcessingService } from './VideoProcessingService.js';
 import { UserWebhookService } from './UserWebhookService.js';
 import { UtilityService } from './UtilityService.js';
+import { DisposableEmailDomainService } from './DisposableEmailDomainService.js';
 import { FileInfoService } from './FileInfoService.js';
 import { SearchService } from './SearchService.js';
 import { ClipService } from './ClipService.js';
@@ -221,6 +222,7 @@ const $UserWebhookService: Provider = { provide: 'UserWebhookService', useExisti
 const $SystemWebhookService: Provider = { provide: 'SystemWebhookService', useExisting: SystemWebhookService };
 const $WebhookTestService: Provider = { provide: 'WebhookTestService', useExisting: WebhookTestService };
 const $UtilityService: Provider = { provide: 'UtilityService', useExisting: UtilityService };
+const $DisposableEmailDomainService: Provider = { provide: 'DisposableEmailDomainService', useExisting: DisposableEmailDomainService };
 const $FileInfoService: Provider = { provide: 'FileInfoService', useExisting: FileInfoService };
 const $FlashService: Provider = { provide: 'FlashService', useExisting: FlashService };
 const $SearchService: Provider = { provide: 'SearchService', useExisting: SearchService };
@@ -376,6 +378,7 @@ const $ApQuestionService: Provider = { provide: 'ApQuestionService', useExisting
 		SystemWebhookService,
 		WebhookTestService,
 		UtilityService,
+		DisposableEmailDomainService,
 		FileInfoService,
 		FlashService,
 		SearchService,
@@ -529,6 +532,7 @@ const $ApQuestionService: Provider = { provide: 'ApQuestionService', useExisting
 		$SystemWebhookService,
 		$WebhookTestService,
 		$UtilityService,
+		$DisposableEmailDomainService,
 		$FileInfoService,
 		$FlashService,
 		$SearchService,
@@ -682,6 +686,7 @@ const $ApQuestionService: Provider = { provide: 'ApQuestionService', useExisting
 		SystemWebhookService,
 		WebhookTestService,
 		UtilityService,
+		DisposableEmailDomainService,
 		FileInfoService,
 		FlashService,
 		SearchService,
@@ -834,6 +839,7 @@ const $ApQuestionService: Provider = { provide: 'ApQuestionService', useExisting
 		$SystemWebhookService,
 		$WebhookTestService,
 		$UtilityService,
+		$DisposableEmailDomainService,
 		$FileInfoService,
 		$SearchService,
 		$ClipService,

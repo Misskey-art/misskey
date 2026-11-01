@@ -17,17 +17,17 @@ import { MiUser } from '@/models/_.js';
 const waitForPushToTlOptions = { timeout: 3000, interval: 25 };
 
 describe('Endpoints', () => {
-	let alice: misskey.entities.SignupResponse;
-	let bob: misskey.entities.SignupResponse;
-	let carol: misskey.entities.SignupResponse;
-	let dave: misskey.entities.SignupResponse;
+	let alice: misskey.entities.SignupSuccessResponse;
+	let bob: misskey.entities.SignupSuccessResponse;
+	let carol: misskey.entities.SignupSuccessResponse;
+	let dave: misskey.entities.SignupSuccessResponse;
 
 	beforeAll(async () => {
 		alice = await signup({ username: 'alice' });
 		bob = await signup({ username: 'bob' });
 		carol = await signup({ username: 'carol' });
 		dave = await signup({ username: 'dave' });
-		await api('admin/update-meta', { federation: 'all' }, alice as misskey.entities.SignupResponse);
+		await api('admin/update-meta', { federation: 'all' }, alice as misskey.entities.SignupSuccessResponse);
 	}, 1000 * 60 * 2);
 
 	describe('signup', () => {
@@ -57,7 +57,7 @@ describe('Endpoints', () => {
 
 			assert.strictEqual(res.status, 200);
 			assert.strictEqual(typeof res.body === 'object' && !Array.isArray(res.body), true);
-			assert.strictEqual(res.body.username, me.username);
+			assert.strictEqual((res.body as misskey.entities.SignupSuccessResponse).username, me.username);
 		});
 
 		test('同じユーザー名のアカウントは作成できない', async () => {
@@ -651,7 +651,7 @@ describe('Endpoints', () => {
 		for (const type of ['webp', 'avif']) {
 			const mediaType = `image/${type}`;
 
-			const getWebpublicType = async (user: misskey.entities.SignupResponse, fileId: string): Promise<string> => {
+			const getWebpublicType = async (user: misskey.entities.SignupSuccessResponse, fileId: string): Promise<string> => {
 				// drive/files/create does not expose webpublicType directly, so get it by posting it
 				const res = await post(user, {
 					text: mediaType,

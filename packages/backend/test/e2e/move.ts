@@ -25,13 +25,13 @@ describe('Account Move', () => {
 	let jq: INestApplicationContext;
 	let url: URL;
 
-	let root: misskey.entities.SignupResponse;
-	let alice: misskey.entities.SignupResponse;
-	let bob: misskey.entities.SignupResponse;
-	let carol: misskey.entities.SignupResponse;
-	let dave: misskey.entities.SignupResponse;
-	let eve: misskey.entities.SignupResponse;
-	let frank: misskey.entities.SignupResponse;
+	let root: misskey.entities.SignupSuccessResponse;
+	let alice: misskey.entities.SignupSuccessResponse;
+	let bob: misskey.entities.SignupSuccessResponse;
+	let carol: misskey.entities.SignupSuccessResponse;
+	let dave: misskey.entities.SignupSuccessResponse;
+	let eve: misskey.entities.SignupSuccessResponse;
+	let frank: misskey.entities.SignupSuccessResponse;
 
 	let Users: UsersRepository;
 

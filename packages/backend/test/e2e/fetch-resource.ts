@@ -23,7 +23,7 @@ const HTML = 'text/html; charset=utf-8';
 const JSON_UTF8 = 'application/json; charset=utf-8';
 
 describe('Webリソース', () => {
-	let alice: misskey.entities.SignupResponse;
+	let alice: misskey.entities.SignupSuccessResponse;
 	let aliceUploadedFile: misskey.entities.DriveFile | null;
 	let alicesPost: misskey.entities.Note;
 	let alicePage: misskey.entities.Page;
@@ -32,7 +32,7 @@ describe('Webリソース', () => {
 	let aliceGalleryPost: misskey.entities.GalleryPost;
 	let aliceChannel: misskey.entities.Channel;
 
-	let bob: misskey.entities.SignupResponse;
+	let bob: misskey.entities.SignupSuccessResponse;
 
 	type Request = {
 		path: string,
@@ -79,7 +79,7 @@ describe('Webリソース', () => {
 
 	beforeAll(async () => {
 		alice = await signup({ username: 'alice' });
-		await api('admin/update-meta', { federation: 'all' }, alice as misskey.entities.SignupResponse);
+		await api('admin/update-meta', { federation: 'all' }, alice as misskey.entities.SignupSuccessResponse);
 		aliceUploadedFile = (await uploadFile(alice)).body;
 		alicesPost = await post(alice, {
 			text: 'test',

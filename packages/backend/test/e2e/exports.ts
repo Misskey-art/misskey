@@ -13,8 +13,8 @@ import type * as misskey from 'misskey-js';
 
 describe('export-clips', () => {
 	let queue: INestApplicationContext;
-	let alice: misskey.entities.SignupResponse;
-	let bob: misskey.entities.SignupResponse;
+	let alice: misskey.entities.SignupSuccessResponse;
+	let bob: misskey.entities.SignupSuccessResponse;
 
 	// XXX: Any better way to get the result?
 	async function pollFirstDriveFile(): Promise<any> {

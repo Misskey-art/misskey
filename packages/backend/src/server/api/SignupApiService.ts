@@ -5,6 +5,7 @@
 
 import { Inject, Injectable } from '@nestjs/common';
 import bcrypt from 'bcryptjs';
+import * as Redis from 'ioredis';
 import { IsNull, LessThanOrEqual } from 'typeorm';
 import { DI } from '@/di-symbols.js';
 import type { RegistrationTicketsRepository, UsedUsernamesRepository, UserPendingsRepository, UserProfilesRepository, UsersRepository, MiRegistrationTicket, MiMeta } from '@/models/_.js';
@@ -18,6 +19,8 @@ import { MiLocalUser } from '@/models/User.js';
 import { FastifyReplyError } from '@/misc/fastify-reply-error.js';
 import { bindThis } from '@/decorators.js';
 import { L_CHARS, secureRndstr } from '@/misc/secure-rndstr.js';
+import { markSignupCheckCodeSeen } from '@/misc/signup-check-seen.js';
+import { signupPendingApprovalEmail } from '@/misc/signup-approval-emails.js';
 import { SigninService } from './SigninService.js';
 import type { FindOptionsWhere } from 'typeorm';
 import type { FastifyRequest, FastifyReply } from 'fastify';
@@ -48,6 +51,9 @@ export class SignupApiService {
 		@Inject(DI.registrationTicketsRepository)
 		private registrationTicketsRepository: RegistrationTicketsRepository,
 
+		@Inject(DI.redis)
+		private redisClient: Redis.Redis,
+
 		private userEntityService: UserEntityService,
 		private idService: IdService,
 		private captchaService: CaptchaService,
@@ -55,6 +61,24 @@ export class SignupApiService {
 		private signinService: SigninService,
 		private emailService: EmailService,
 	) {
+	}
+
+	/**
+	 * misskey.art独自: 承認を待つ申請者が、メールアドレスが無くても審査の結果を確かめられるようにする確認コードを作る。
+	 * 記録はアカウントと同じトランザクションでSignupServiceがする(approvalCheckCode)
+	 */
+	@bindThis
+	private generateApprovalCheckCode(): string {
+		return secureRndstr(32, { chars: L_CHARS });
+	}
+
+	/**
+	 * misskey.art独自: 申請した本人の端末はこのコードを保存し、あとでcaptchaなしで確かめる(signup-check-status)。
+	 * アカウントはもう作ってあるので、Redisに書けなくても登録は失敗させない(そのときは確かめるときにcaptchaが要るだけ)
+	 */
+	@bindThis
+	private async markApprovalCheckCodeSeen(code: string): Promise<void> {
+		await markSignupCheckCodeSeen(this.redisClient, code).catch(() => {});
 	}
 
 	@bindThis
@@ -66,6 +90,7 @@ export class SignupApiService {
 				host?: string;
 				invitationCode?: string;
 				emailAddress?: string;
+				reason?: string;
 				'hcaptcha-response'?: string;
 				'g-recaptcha-response'?: string;
 				'turnstile-response'?: string;
@@ -116,6 +141,10 @@ export class SignupApiService {
 		const host: string | null = process.env.NODE_ENV === 'test' ? (body['host'] ?? null) : null;
 		const invitationCode = body['invitationCode'];
 		const emailAddress = body['emailAddress'];
+		// misskey.art独自: 承認制の新規登録で、申請者が書いた登録の理由
+		const reason = typeof body['reason'] === 'string' ? body['reason'] : undefined;
+
+		const { approvalRequiredForSignup, signupReasonRequired, signupReasonMaxLength } = this.meta;
 
 		if (this.meta.emailRequiredForSignup) {
 			if (emailAddress == null || typeof emailAddress !== 'string') {
@@ -132,45 +161,65 @@ export class SignupApiService {
 
 		let ticket: MiRegistrationTicket | null = null;
 
+		// misskey.art独自: 承認制の新規登録が有効なときは、招待コードを任意にする(コードが無ければ、理由を書いた申請として受け付ける。
+		// コードがあれば今までどおり確かめ、有効なら承認を待たない)
+		const invitationCodeOptional = approvalRequiredForSignup;
+		const hasInvitationCode = typeof invitationCode === 'string' && invitationCode !== '';
+
 		// テスト時はこの機構は障害となるため無効にする
 		if (process.env.NODE_ENV !== 'test' && this.meta.disableRegistration) {
-			if (invitationCode == null || typeof invitationCode !== 'string') {
+			if (!invitationCodeOptional && !hasInvitationCode) {
 				reply.code(400);
 				return;
 			}
 
-			// ここでの検証はあくまで早期リジェクトのための事前チェックで、
-			// 実際の使用可否は消費直前の claimRegistrationTicket() が担保する
-			ticket = await this.registrationTicketsRepository.findOneBy({
-				code: invitationCode,
-			});
+			if (hasInvitationCode) {
+				// ここでの検証はあくまで早期リジェクトのための事前チェックで、
+				// 実際の使用可否は消費直前の claimRegistrationTicket() が担保する
+				ticket = await this.registrationTicketsRepository.findOneBy({
+					code: invitationCode,
+				});
 
-			if (ticket == null || ticket.usedById != null) {
-				reply.code(400);
-				return;
-			}
-
-			if (ticket.expiresAt && ticket.expiresAt < new Date()) {
-				reply.code(400);
-				return;
-			}
-
-			// メアド認証が有効の場合
-			if (this.meta.emailRequiredForSignup) {
-				// メアド認証済みならエラー
-				if (ticket.usedBy) {
+				if (ticket == null || ticket.usedById != null) {
 					reply.code(400);
 					return;
 				}
 
-				// 認証しておらず、メール送信から30分以内ならエラー
-				if (ticket.usedAt && ticket.usedAt.getTime() + invitationCodeMailTimeoutMs > Date.now()) {
+				if (ticket.expiresAt && ticket.expiresAt < new Date()) {
 					reply.code(400);
 					return;
 				}
-			} else if (ticket.usedAt) {
-				reply.code(400);
-				return;
+
+				// メアド認証が有効の場合
+				if (this.meta.emailRequiredForSignup) {
+					// メアド認証済みならエラー
+					if (ticket.usedBy) {
+						reply.code(400);
+						return;
+					}
+
+					// 認証しておらず、メール送信から30分以内ならエラー
+					if (ticket.usedAt && ticket.usedAt.getTime() + invitationCodeMailTimeoutMs > Date.now()) {
+						reply.code(400);
+						return;
+					}
+				} else if (ticket.usedAt) {
+					reply.code(400);
+					return;
+				}
+			}
+		}
+
+		// misskey.art独自: 招待コードで登録したときは、承認を待たない(招待した時点で、モデレーターが信任しているため)
+		const approvalRequiredForThisSignup = approvalRequiredForSignup && ticket == null;
+
+		if (approvalRequiredForThisSignup) {
+			if (signupReasonRequired && (reason == null || reason.trim() === '')) {
+				throw new FastifyReplyError(400, 'REASON_REQUIRED');
+			}
+
+			if (reason != null && reason.length > signupReasonMaxLength) {
+				throw new FastifyReplyError(400, 'REASON_TOO_LONG');
 			}
 		}
 
@@ -207,6 +256,8 @@ export class SignupApiService {
 					email: emailAddress!,
 					username: username,
 					password: hash,
+					// misskey.art独自: 承認を待つ登録なら、理由をアカウントを作るときまで取っておく
+					reason: approvalRequiredForThisSignup ? (reason ?? null) : null,
 				});
 
 				const link = `${this.config.url}/signup-complete/${code}`;
@@ -235,8 +286,13 @@ export class SignupApiService {
 			}
 
 			try {
+				const checkCode = approvalRequiredForThisSignup ? this.generateApprovalCheckCode() : undefined;
 				const { account, secret } = await this.signupService.signup({
 					username, password, host,
+					// misskey.art独自: 承認を待つ登録なら、承認されるまで使えないアカウントにする
+					approved: !approvalRequiredForThisSignup,
+					signupReason: approvalRequiredForThisSignup ? (reason ?? null) : undefined,
+					approvalCheckCode: checkCode,
 				});
 
 				if (ticket) {
@@ -244,6 +300,12 @@ export class SignupApiService {
 						usedBy: account,
 						usedById: account.id,
 					});
+				}
+
+				// misskey.art独自: 承認を待つアカウントには、トークンを返さない(代わりに審査の結果を確かめるためのコードを返す)
+				if (checkCode != null) {
+					await this.markApprovalCheckCodeSeen(checkCode);
+					return { pendingApproval: true, checkCode } as const;
 				}
 
 				const res = await this.userEntityService.pack(account, account, {
@@ -347,9 +409,30 @@ export class SignupApiService {
 				throw new FastifyReplyError(400, 'EXPIRED');
 			}
 
+			// misskey.art独自: 登録を受け付けた後に、同じ(別名を含む)メールアドレスのアカウントが確認済みになっていたら作らない。
+			// 受付時は確認前の登録を数えないため、+タグ等の別名で複数登録してから順に確認すると、重複を防げないので。
+			// 受付の後に管理画面で+タグ・Gmailのドットを禁止した場合も、ここで断る
+			const rejection = await this.emailService.isEmailUsedByOtherAccount(pendingUser.email) ? 'USED_EMAIL'
+				: this.emailService.isPlusTagBlocked(pendingUser.email) || this.emailService.isGmailDotBlocked(pendingUser.email) ? 'UNAVAILABLE_EMAIL'
+				: null;
+			if (rejection != null) {
+				await this.userPendingsRepository.delete({ id: pendingUser.id });
+				const pendingTicket = await this.registrationTicketsRepository.findOneBy({ pendingUserId: pendingUser.id });
+				if (pendingTicket) await this.releaseRegistrationTicket(pendingTicket);
+				throw new FastifyReplyError(400, rejection);
+			}
+
+			// misskey.art独自: 招待コードで登録したときは、承認を待たない(招待した時点で、モデレーターが信任しているため)
+			const ticket = await this.registrationTicketsRepository.findOneBy({ pendingUserId: pendingUser.id });
+			const approvalRequiredForThisSignup = this.meta.approvalRequiredForSignup && ticket == null;
+
+			const checkCode = approvalRequiredForThisSignup ? this.generateApprovalCheckCode() : undefined;
 			const { account } = await this.signupService.signup({
 				username: pendingUser.username,
 				passwordHash: pendingUser.password,
+				approved: !approvalRequiredForThisSignup,
+				signupReason: approvalRequiredForThisSignup ? pendingUser.reason : undefined,
+				approvalCheckCode: checkCode,
 			});
 
 			this.userPendingsRepository.delete({
@@ -364,13 +447,21 @@ export class SignupApiService {
 				emailVerifyCode: null,
 			});
 
-			const ticket = await this.registrationTicketsRepository.findOneBy({ pendingUserId: pendingUser.id });
 			if (ticket) {
 				await this.registrationTicketsRepository.update(ticket.id, {
 					usedBy: account,
 					usedById: account.id,
 					pendingUserId: null,
 				});
+			}
+
+			// misskey.art独自: 承認を待つアカウントは、サインインさせずに承認待ちのメールを送り、審査の結果を確かめるためのコードを返す
+			if (checkCode != null) {
+				const email = signupPendingApprovalEmail(this.meta.name ?? this.config.host);
+				this.emailService.sendEmail(pendingUser.email, email.subject, email.html, email.text);
+
+				await this.markApprovalCheckCodeSeen(checkCode);
+				return { pendingApproval: true, checkCode } as const;
 			}
 
 			return this.signinService.signin(request, reply, account as MiLocalUser);

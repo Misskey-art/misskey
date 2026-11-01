@@ -33,6 +33,7 @@ import { HttpRequestService } from '@/core/HttpRequestService.js';
 import type { Config } from '@/config.js';
 import { AvatarDecorationService } from '@/core/AvatarDecorationService.js';
 import { notificationRecieveConfig } from '@/models/json-schema/user.js';
+import { FOLLOW_APPROVAL_MAX_SECONDS } from '@/misc/should-require-follow-approval-by-account-age.js';
 import { ApiLoggerService } from '../../ApiLoggerService.js';
 import { ApiError } from '../../error.js';
 
@@ -146,9 +147,6 @@ const muteWords = { type: 'array', items: { oneOf: [
 	{ type: 'array', items: { type: 'string' } },
 	{ type: 'string' },
 ] } } as const;
-
-/** 上限は30日程度にしておく */
-const FOLLOW_APPROVAL_MAX_SECONDS = 30 * 24 * 60 * 60;
 
 export const paramDef = {
 	type: 'object',

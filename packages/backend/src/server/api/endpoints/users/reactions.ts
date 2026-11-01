@@ -4,7 +4,9 @@
  */
 
 import { Inject, Injectable } from '@nestjs/common';
+import { EntityNotFoundError } from 'typeorm';
 import type { UserProfilesRepository, NoteReactionsRepository } from '@/models/_.js';
+import { MiUser } from '@/models/User.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { QueryService } from '@/core/QueryService.js';
 import { NoteReactionEntityService } from '@/core/entities/NoteReactionEntityService.js';
@@ -79,6 +81,10 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			const iAmModerator = me ? await this.roleService.isModerator(me) : false; // Moderators can see reactions of all users
 			if (!iAmModerator) {
 				const user = await this.cacheService.findUserById(ps.userId);
+				// misskey.art独自: 承認を待っているアカウントは、無いアカウント(findUserByIdが投げる)と同じに見せる
+				if (!user.approved) {
+					throw new EntityNotFoundError(MiUser, { id: ps.userId });
+				}
 				if (this.userEntityService.isRemoteUser(user)) {
 					throw new ApiError(meta.errors.isRemoteUser);
 				}

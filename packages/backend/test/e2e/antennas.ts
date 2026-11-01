@@ -30,7 +30,7 @@ describe('アンテナ', () => {
 	// (Antennaを返すエンドポイント、Antennaエンティティを書き換えるエンドポイント、Antennaからノートを取得するエンドポイントをテストする)
 
 	type Antenna = misskey.entities.Antenna;
-	type User = misskey.entities.SignupResponse;
+	type User = misskey.entities.SignupSuccessResponse;
 	type Note = misskey.entities.Note;
 
 	// アンテナを作成できる最小のパラメタ

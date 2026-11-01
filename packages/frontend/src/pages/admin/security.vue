@@ -168,6 +168,55 @@ SPDX-License-Identifier: AGPL-3.0-only
 					</MkFolder>
 				</SearchMarker>
 
+				<!-- misskey.art独自: 使い捨てメールアドレスと、メールアドレスの別名(Gmailのドット・+タグ)で登録できないようにする -->
+				<SearchMarker v-slot="slotProps" :keywords="['disposable', 'email', 'alias', 'gmail', 'signup']">
+					<MkFolder :defaultOpen="slotProps.isParentOfTarget">
+						<template #label><SearchLabel>{{ i18n.ts._serverSettings.signupEmailRestrictions }}</SearchLabel><span class="_art">ART</span></template>
+						<template v-if="signupEmailRestrictionsForm.modified.value" #footer>
+							<MkFormFooter :form="signupEmailRestrictionsForm"/>
+						</template>
+
+						<div class="_gaps_m">
+							<div><SearchText>{{ i18n.ts._serverSettings.signupEmailRestrictionsDescription }}</SearchText></div>
+
+							<SearchMarker>
+								<MkSwitch v-model="signupEmailRestrictionsForm.state.disposableEmailBlocklistEnabled">
+									<template #label><SearchLabel>{{ i18n.ts._serverSettings.disposableEmailBlocklistEnabled }}</SearchLabel></template>
+									<template #caption>
+										{{ i18n.ts._serverSettings.disposableEmailBlocklistEnabledCaption }}
+										<a href="https://github.com/disposable-email-domains/disposable-email-domains" target="_blank" rel="noopener" class="_link">disposable-email-domains</a>
+										<br>
+										<template v-if="disposableEmailBlocklistStatus.fetchedAt != null">{{ i18n.tsx._serverSettings.disposableEmailBlocklistStatus({ n: disposableEmailBlocklistStatus.count }) }} <MkTime :time="disposableEmailBlocklistStatus.fetchedAt" mode="detail"/></template>
+										<template v-else-if="signupEmailRestrictionsForm.savedState.disposableEmailBlocklistEnabled">{{ i18n.ts._serverSettings.disposableEmailBlocklistFetchFailed }}</template>
+										<template v-else>{{ i18n.ts._serverSettings.disposableEmailBlocklistNotFetched }}</template>
+									</template>
+								</MkSwitch>
+							</SearchMarker>
+
+							<SearchMarker>
+								<MkTextarea v-model="signupEmailRestrictionsForm.state.disposableEmailAllowDomains">
+									<template #label><SearchLabel>{{ i18n.ts._serverSettings.disposableEmailAllowDomains }}</SearchLabel></template>
+									<template #caption>{{ i18n.ts._serverSettings.disposableEmailAllowDomainsCaption }}</template>
+								</MkTextarea>
+							</SearchMarker>
+
+							<SearchMarker>
+								<MkSwitch v-model="signupEmailRestrictionsForm.state.blockEmailDotAliasRegistration">
+									<template #label><SearchLabel>{{ i18n.ts._serverSettings.blockEmailDotAliasRegistration }}</SearchLabel></template>
+									<template #caption>{{ i18n.ts._serverSettings.blockEmailDotAliasRegistrationCaption }}</template>
+								</MkSwitch>
+							</SearchMarker>
+
+							<SearchMarker>
+								<MkSwitch v-model="signupEmailRestrictionsForm.state.blockEmailPlusAliasRegistration">
+									<template #label><SearchLabel>{{ i18n.ts._serverSettings.blockEmailPlusAliasRegistration }}</SearchLabel></template>
+									<template #caption>{{ i18n.ts._serverSettings.blockEmailPlusAliasRegistrationCaption }}</template>
+								</MkSwitch>
+							</SearchMarker>
+						</div>
+					</MkFolder>
+				</SearchMarker>
+
 				<SearchMarker v-slot="slotProps" :keywords="['log', 'ipAddress']">
 					<MkFolder :defaultOpen="slotProps.isParentOfTarget">
 						<template #label><SearchLabel>Log IP address</SearchLabel></template>
@@ -279,6 +328,33 @@ const bannedEmailDomainsForm = useForm({
 	await os.apiWithDialog('admin/update-meta', {
 		bannedEmailDomains: state.bannedEmailDomains.split('\n'),
 	});
+	fetchInstance(true);
+});
+
+// misskey.art独自: 許可するドメインは1行に1つで入れる(空白・カンマで区切って並べてもよい)。上限はadmin/update-metaのparamDefと合わせる
+function parseDomainLines(input: string): string[] {
+	return input.split(/[\s,]+/).filter(x => x.length > 0 && x.length <= 253).slice(0, 1000);
+}
+
+// 一覧の状態(件数と取得した日時)。保存した後に読み直す
+const disposableEmailBlocklistStatus = ref({ count: meta.disposableEmailBlocklistCount, fetchedAt: meta.disposableEmailBlocklistFetchedAt });
+
+const signupEmailRestrictionsForm = useForm({
+	disposableEmailBlocklistEnabled: meta.disposableEmailBlocklistEnabled,
+	disposableEmailAllowDomains: meta.disposableEmailAllowDomains.join('\n'),
+	blockEmailDotAliasRegistration: meta.blockEmailDotAliasRegistration,
+	blockEmailPlusAliasRegistration: meta.blockEmailPlusAliasRegistration,
+}, async (state) => {
+	await os.apiWithDialog('admin/update-meta', {
+		disposableEmailBlocklistEnabled: state.disposableEmailBlocklistEnabled,
+		disposableEmailAllowDomains: parseDomainLines(state.disposableEmailAllowDomains),
+		blockEmailDotAliasRegistration: state.blockEmailDotAliasRegistration,
+		blockEmailPlusAliasRegistration: state.blockEmailPlusAliasRegistration,
+	});
+	// 許可するドメインは、サーバーが形の正しいものだけにそろえて保存する。保存されなかったものに気付けるよう、欄にも反映する
+	const saved = await misskeyApi('admin/meta');
+	signupEmailRestrictionsForm.state.disposableEmailAllowDomains = saved.disposableEmailAllowDomains.join('\n');
+	disposableEmailBlocklistStatus.value = { count: saved.disposableEmailBlocklistCount, fetchedAt: saved.disposableEmailBlocklistFetchedAt };
 	fetchInstance(true);
 });
 

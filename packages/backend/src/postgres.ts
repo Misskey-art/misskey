@@ -68,6 +68,7 @@ import { MiUserListFavorite } from '@/models/UserListFavorite.js';
 import { MiUserListMembership } from '@/models/UserListMembership.js';
 import { MiUserNotePining } from '@/models/UserNotePining.js';
 import { MiUserPending } from '@/models/UserPending.js';
+import { MiSignupApprovalCheck } from '@/models/SignupApprovalCheck.js';
 import { MiUserProfile } from '@/models/UserProfile.js';
 import { MiUserPublickey } from '@/models/UserPublickey.js';
 import { MiUserSecurityKey } from '@/models/UserSecurityKey.js';
@@ -240,6 +241,7 @@ export const entities = [
 	MiAd,
 	MiPasswordResetRequest,
 	MiUserPending,
+	MiSignupApprovalCheck,
 	MiWebhook,
 	MiSystemWebhook,
 	MiUserIp,

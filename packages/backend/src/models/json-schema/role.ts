@@ -333,6 +333,11 @@ export const packedRolePoliciesSchema = {
 			type: 'integer',
 			optional: false, nullable: false,
 		},
+		// misskey.art独自: 承認制の新規登録で、申請を承認・却下できるか
+		canApproveSignups: {
+			type: 'boolean',
+			optional: false, nullable: false,
+		},
 	},
 } as const;
 

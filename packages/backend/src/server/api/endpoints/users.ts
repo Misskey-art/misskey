@@ -56,7 +56,9 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		super(meta, paramDef, async (ps, me) => {
 			const query = this.usersRepository.createQueryBuilder('user')
 				.where('user.isExplorable = TRUE')
-				.andWhere('user.isSuspended = FALSE');
+				.andWhere('user.isSuspended = FALSE')
+				// misskey.art独自: 承認制の新規登録で、まだ承認されていないアカウントは出さない
+				.andWhere('user.approved = TRUE');
 
 			switch (ps.state) {
 				case 'alive': query.andWhere('user.updatedAt > :date', { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5) }); break;

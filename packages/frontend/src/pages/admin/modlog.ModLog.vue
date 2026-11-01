@@ -18,6 +18,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					'createAvatarDecoration',
 					'createSystemWebhook',
 					'createAbuseReportNotificationRecipient',
+					'approveSignup',
 				].includes(log.type),
 				[$style.logYellow]: [
 					'markSensitiveDriveFile',
@@ -42,6 +43,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					'deleteFlash',
 					'deleteGalleryPost',
 					'deleteChatRoom',
+					'declineSignup',
 				].includes(log.type)
 			}"
 		>{{ i18n.ts._moderationLogTypes[log.type] }}</b>
@@ -84,6 +86,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<span v-else-if="log.type === 'deleteFlash'">: @{{ log.info.flashUserUsername }}</span>
 		<span v-else-if="log.type === 'deleteGalleryPost'">: @{{ log.info.postUserUsername }}</span>
 		<span v-else-if="log.type === 'deleteChatRoom'">: @{{ log.info.room.name }}</span>
+		<!-- misskey.art独自 -->
+		<span v-else-if="log.type === 'approveSignup' || log.type === 'declineSignup'">: @{{ log.info.userUsername }}{{ log.info.userHost ? '@' + log.info.userHost : '' }}</span>
 	</template>
 	<template #icon>
 		<i v-if="log.type === 'updateServerSettings'" class="ti ti-settings"></i>
@@ -129,6 +133,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<i v-else-if="log.type === 'deleteFlash'" class="ti ti-trash"></i>
 		<i v-else-if="log.type === 'deleteGalleryPost'" class="ti ti-trash"></i>
 		<i v-else-if="log.type === 'deleteChatRoom'" class="ti ti-trash"></i>
+		<!-- misskey.art独自 -->
+		<i v-else-if="log.type === 'approveSignup'" class="ti ti-user-check"></i>
+		<i v-else-if="log.type === 'declineSignup'" class="ti ti-user-x"></i>
 	</template>
 	<template #suffix>
 		<MkTime :time="log.createdAt"/>
@@ -220,6 +227,15 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<div :class="$style.diff">
 				<CodeDiff :context="5" :hideHeader="true" :oldString="log.info.before ?? ''" :newString="log.info.after ?? ''" maxHeight="300px"/>
 			</div>
+		</template>
+		<!-- misskey.art独自 -->
+		<template v-else-if="log.type === 'approveSignup'">
+			<div>{{ i18n.ts.user }}: <MkA :to="`/admin/user/${log.info.userId}`" class="_link">@{{ log.info.userUsername }}{{ log.info.userHost ? '@' + log.info.userHost : '' }}</MkA></div>
+		</template>
+		<template v-else-if="log.type === 'declineSignup'">
+			<!-- 却下したアカウントは消えているので、リンクにしない -->
+			<div>{{ i18n.ts.user }}: @{{ log.info.userUsername }}{{ log.info.userHost ? '@' + log.info.userHost : '' }}</div>
+			<div class="_selectable">{{ i18n.ts._signupApprovals.declineReason }}: {{ log.info.reason }}</div>
 		</template>
 
 		<details>

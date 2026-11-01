@@ -197,6 +197,42 @@ export class CaptchaService {
 		}
 	}
 
+	/**
+	 * misskey.art独自: 新規登録・サインイン以外の、普通のエンドポイントからcaptchaを確かめるためのもの(misskey-juiceから移植)。
+	 * 有効にしているプロバイダの分だけ順に確かめ、失敗したときはverifyXxxがCaptchaErrorを投げる
+	 */
+	@bindThis
+	public async verifyRequestCaptcha(meta: MiMeta, response: {
+		hcaptcha?: string | null;
+		mcaptcha?: string | null;
+		recaptcha?: string | null;
+		turnstile?: string | null;
+		testcaptcha?: string | null;
+	}): Promise<void> {
+		// 新規登録・サインインと同じく、テストの時はこの機構が障害となるため無効にする
+		if (process.env.NODE_ENV === 'test') return;
+
+		if (meta.enableHcaptcha && meta.hcaptchaSecretKey) {
+			await this.verifyHcaptcha(meta.hcaptchaSecretKey, response.hcaptcha);
+		}
+
+		if (meta.enableMcaptcha && meta.mcaptchaSecretKey && meta.mcaptchaSitekey && meta.mcaptchaInstanceUrl) {
+			await this.verifyMcaptcha(meta.mcaptchaSecretKey, meta.mcaptchaSitekey, meta.mcaptchaInstanceUrl, response.mcaptcha);
+		}
+
+		if (meta.enableRecaptcha && meta.recaptchaSecretKey) {
+			await this.verifyRecaptcha(meta.recaptchaSecretKey, response.recaptcha);
+		}
+
+		if (meta.enableTurnstile && meta.turnstileSecretKey) {
+			await this.verifyTurnstile(meta.turnstileSecretKey, response.turnstile);
+		}
+
+		if (meta.enableTestcaptcha) {
+			await this.verifyTestcaptcha(response.testcaptcha);
+		}
+	}
+
 	@bindThis
 	public async get(): Promise<CaptchaSetting> {
 		const meta = await this.metaService.fetch(true);

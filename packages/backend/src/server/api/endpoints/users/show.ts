@@ -138,6 +138,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				} : {
 					id: In(ps.userIds),
 					isSuspended: false,
+					// misskey.art独自: 承認制の新規登録で、まだ承認されていないアカウントはモデレーターにだけ見せる
+					approved: true,
 					...(this.serverSettings.ugcVisibilityForVisitor === 'local' && me == null ? { host: IsNull() } : {}),
 				});
 
@@ -171,7 +173,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					user = await this.usersRepository.findOneBy(q);
 				}
 
-				if (user == null || (!isModerator && user.isSuspended)) {
+				// misskey.art独自: 承認制の新規登録で、まだ承認されていないアカウントはモデレーターにだけ見せる
+				if (user == null || (!isModerator && (user.isSuspended || !user.approved))) {
 					throw new ApiError(meta.errors.noSuchUser);
 				}
 

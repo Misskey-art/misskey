@@ -120,6 +120,12 @@ import type {
 	AdminShowUserResponse,
 	AdminShowUsersRequest,
 	AdminShowUsersResponse,
+	AdminSignupApprovalsApproveRequest,
+	AdminSignupApprovalsDeclineRequest,
+	AdminSignupApprovalsHistoryRequest,
+	AdminSignupApprovalsHistoryResponse,
+	AdminSignupApprovalsPendingRequest,
+	AdminSignupApprovalsPendingResponse,
 	AdminSuspendUserRequest,
 	AdminSystemWebhookCreateRequest,
 	AdminSystemWebhookCreateResponse,
@@ -598,6 +604,8 @@ import type {
 	RolesUsersRequest,
 	RolesUsersResponse,
 	ServerInfoResponse,
+	SignupCheckStatusRequest,
+	SignupCheckStatusResponse,
 	StatsResponse,
 	SwRegisterRequest,
 	SwRegisterResponse,
@@ -759,6 +767,10 @@ export type Endpoints = {
 	'admin/show-moderation-logs': { req: AdminShowModerationLogsRequest; res: AdminShowModerationLogsResponse };
 	'admin/show-user': { req: AdminShowUserRequest; res: AdminShowUserResponse };
 	'admin/show-users': { req: AdminShowUsersRequest; res: AdminShowUsersResponse };
+	'admin/signup-approvals/approve': { req: AdminSignupApprovalsApproveRequest; res: EmptyResponse };
+	'admin/signup-approvals/decline': { req: AdminSignupApprovalsDeclineRequest; res: EmptyResponse };
+	'admin/signup-approvals/history': { req: AdminSignupApprovalsHistoryRequest; res: AdminSignupApprovalsHistoryResponse };
+	'admin/signup-approvals/pending': { req: AdminSignupApprovalsPendingRequest; res: AdminSignupApprovalsPendingResponse };
 	'admin/suspend-user': { req: AdminSuspendUserRequest; res: EmptyResponse };
 	'admin/system-webhook/create': { req: AdminSystemWebhookCreateRequest; res: AdminSystemWebhookCreateResponse };
 	'admin/system-webhook/delete': { req: AdminSystemWebhookDeleteRequest; res: EmptyResponse };
@@ -1072,6 +1084,7 @@ export type Endpoints = {
 	'roles/show': { req: RolesShowRequest; res: RolesShowResponse };
 	'roles/users': { req: RolesUsersRequest; res: RolesUsersResponse };
 	'server-info': { req: EmptyRequest; res: ServerInfoResponse };
+	'signup-check-status': { req: SignupCheckStatusRequest; res: SignupCheckStatusResponse };
 	'stats': { req: EmptyRequest; res: StatsResponse };
 	'sw/register': { req: SwRegisterRequest; res: SwRegisterResponse };
 	'sw/show-registration': { req: SwShowRegistrationRequest; res: SwShowRegistrationResponse };

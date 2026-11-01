@@ -137,7 +137,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		}
 
 		let local = await this.mergePack(me, ...await Promise.all([
-			this.apDbResolverService.getUserFromApId(uri),
+			// misskey.art独自: 承認を待っているアカウントは、無いアカウントと同じに扱う
+			this.apDbResolverService.getUserFromApId(uri).then(user => user?.approved === false ? null : user),
 			this.apDbResolverService.getNoteFromApId(uri),
 		]));
 		if (local != null) return local;
@@ -186,7 +187,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		// これはDBに存在する可能性があるため再度DB検索
 		if (uri !== object.id) {
 			local = await this.mergePack(me, ...await Promise.all([
-				this.apDbResolverService.getUserFromApId(object.id),
+				this.apDbResolverService.getUserFromApId(object.id).then(user => user?.approved === false ? null : user),
 				this.apDbResolverService.getNoteFromApId(object.id),
 			]));
 			if (local != null) return local;

@@ -2569,6 +2569,14 @@ export interface Locale extends ILocale {
      */
     "accountDeletedDescription": string;
     /**
+     * アカウントがまだ承認されていません
+     */
+    "accountNotApproved": string;
+    /**
+     * このアカウントは、運営の審査がまだ終わっていません。承認されるまではログインできません。
+     */
+    "accountNotApprovedDescription": string;
+    /**
      * メニュー
      */
     "menu": string;
@@ -5082,6 +5090,14 @@ export interface Locale extends ILocale {
      */
     "emailVerificationFailedError": string;
     /**
+     * このメールアドレス(または同じアドレスとみなされる別名)は、ほかのアカウントで使われています。
+     */
+    "emailAlreadyUsedByOtherAccount": string;
+    /**
+     * このメールアドレスは、このサーバーでは使えません。
+     */
+    "emailNotAllowedOnThisServer": string;
+    /**
      * 「内容を隠す」がオンの場合は注釈の記述が必要です。
      */
     "cwNotationRequired": string;
@@ -6412,6 +6428,14 @@ export interface Locale extends ILocale {
          */
         "useDefault": string;
         /**
+         * 既定値を使う（現在は{n}日）
+         */
+        "useDefaultDays": ParameterizedString<"n">;
+        /**
+         * 既定値を使う（現在は{n}時間）
+         */
+        "useDefaultHours": ParameterizedString<"n">;
+        /**
          * 期間を指定する
          */
         "custom": string;
@@ -7128,6 +7152,94 @@ export interface Locale extends ILocale {
          * アクティビティを表示する
          */
         "showActivitiesForVisitor": string;
+        /**
+         * 登録に使えるメールアドレスの制限
+         */
+        "signupEmailRestrictions": string;
+        /**
+         * 新規登録とメールアドレスの変更で、使い捨てのアドレスや、同じアドレスの別名を断ります。確認のリンクを開いたときにも、もう一度確かめます。
+         */
+        "signupEmailRestrictionsDescription": string;
+        /**
+         * 使い捨てメールアドレスを使えないようにする
+         */
+        "disposableEmailBlocklistEnabled": string;
+        /**
+         * 使い捨てメールアドレスのドメインの一覧に載っているアドレス(サブドメインを含む)を受け付けません。「Active Email Validation」の設定に関係なく動きます。一覧は1日に1回取り直し、取れなかったときは前の一覧を使い続けます。一覧:
+         */
+        "disposableEmailBlocklistEnabledCaption": string;
+        /**
+         * 今の一覧: {n}件、取得:
+         */
+        "disposableEmailBlocklistStatus": ParameterizedString<"n">;
+        /**
+         * 一覧はまだ取得していません(オンにして保存すると取得します。取得できるまでは判定しません)
+         */
+        "disposableEmailBlocklistNotFetched": string;
+        /**
+         * 一覧をまだ取得できていません。取得できるまでは判定せず、あとでもう一度取りに行きます。
+         */
+        "disposableEmailBlocklistFetchFailed": string;
+        /**
+         * 使い捨てと判定しないドメイン
+         */
+        "disposableEmailAllowDomains": string;
+        /**
+         * 1行に1つ、ドメインを入れます(例: example.com)。一覧に載っていても、ここに入れたドメインとそのサブドメインは受け付けます。誤って一覧に載っているドメインを外すのに使います。「Active Email Validation」が使い捨てと判定したときにも効きます。
+         */
+        "disposableEmailAllowDomainsCaption": string;
+        /**
+         * Gmailで、@より前に「.」を含むアドレスを使えないようにする
+         */
+        "blockEmailDotAliasRegistration": string;
+        /**
+         * @より前に.を含むGmailのアドレス(ex.ample@gmail.com など)を、既存のアカウントの有無に関係なく受け付けません。あわせて、.を除くと同じになるGmailのアドレスも重複として扱います。対象はGmail/Googlemailだけなので、ほかのプロバイダのアドレスには影響しません。
+         */
+        "blockEmailDotAliasRegistrationCaption": string;
+        /**
+         * @より前に「+」を含むアドレスを使えないようにする
+         */
+        "blockEmailPlusAliasRegistration": string;
+        /**
+         * +タグを含むアドレス(example+1@gmail.com など)を、既存のアカウントの有無に関係なく受け付けません。あわせて、+タグを除くと同じになるアドレス(example+1@gmail.com と example@gmail.com など)も、重複として扱います。
+         */
+        "blockEmailPlusAliasRegistrationCaption": string;
+        /**
+         * 新しいアカウントからのフォローを承認制にする期間の既定値
+         */
+        "followApprovalDefault": string;
+        /**
+         * ユーザーが「新しいアカウントからのフォローを承認制にする」で「既定値を使う」にしているときの期間です。0にすると無効になります。上限は30日です。
+         */
+        "followApprovalDefaultDescription": string;
+        /**
+         * 0(無効)か、1秒から30日までの期間を入れてください。
+         */
+        "followApprovalDefaultInvalid": string;
+        /**
+         * {target}の単位
+         */
+        "followApprovalDefaultUnit": ParameterizedString<"target">;
+        /**
+         * 新規登録を承認制にする
+         */
+        "approvalRequiredForSignup": string;
+        /**
+         * オンにすると、新しく登録したアカウントは、審査で承認されるまで使えません。オンの間は、アカウントの作成をオープンにしていなくても、招待コードなしで参加を申請できます。アカウントの作成をオープンにしていないときは、有効な招待コードを使った登録だけ、審査なしで完了します(オープンにしているときは招待コードの欄が出ないので、全員が審査を受けます)。
+         */
+        "approvalRequiredForSignupCaption": string;
+        /**
+         * 登録の理由の入力を必須にする
+         */
+        "signupReasonRequired": string;
+        /**
+         * 承認制の新規登録で、申請する人に登録の理由を必ず書いてもらいます。
+         */
+        "signupReasonRequiredCaption": string;
+        /**
+         * 登録の理由の最大文字数
+         */
+        "signupReasonMaxLength": string;
         "_userGeneratedContentsVisibilityForVisitor": {
             /**
              * 全て公開
@@ -8393,6 +8505,10 @@ export interface Locale extends ILocale {
              * お知らせ1件に付けられるリアクションの種類数の上限
              */
             "announcementReactionTypeLimit": string;
+            /**
+             * 新規登録の申請の承認・却下
+             */
+            "canApproveSignups": string;
         };
         "_condition": {
             /**
@@ -8564,6 +8680,14 @@ export interface Locale extends ILocale {
          * このメールアドレスでは登録できません
          */
         "banned": string;
+        /**
+         * +を含むメールアドレスは使えません
+         */
+        "plusTag": string;
+        /**
+         * Gmailでは、@より前に.を含むメールアドレスは使えません
+         */
+        "gmailDot": string;
     };
     "_ffVisibility": {
         /**
@@ -8592,6 +8716,166 @@ export interface Locale extends ILocale {
          * 入力されたメールアドレス({email})宛に確認のメールが送信されました。メールに記載されたリンクにアクセスすると、アカウントの作成が完了します。メールに記載されているリンクの有効期限は30分です。
          */
         "emailSent": ParameterizedString<"email">;
+        /**
+         * 登録の理由
+         */
+        "reason": string;
+        /**
+         * 運営が審査するときに読みます。ほかのユーザーには公開されません。(最大{max}文字)
+         */
+        "reasonCaption": ParameterizedString<"max">;
+        /**
+         * このサーバーの新規登録は承認制です。申請したあと、運営が承認するまではログインできません。
+         */
+        "approvalNotice": string;
+        /**
+         * 招待コードをお持ちの方は、入力すると審査なしで登録できます。
+         */
+        "invitationCodeOptional": string;
+        /**
+         * 参加の申請
+         */
+        "applicationTitle": string;
+        /**
+         * 申請する
+         */
+        "apply": string;
+        /**
+         * 申請を受け付けました
+         */
+        "applicationReceived": string;
+        /**
+         * 運営の審査をお待ちください。審査の結果は、メールでもお知らせします。
+         */
+        "pendingApproval": string;
+        /**
+         * 運営の審査をお待ちください。承認されると、ログインできるようになります。
+         */
+        "pendingApprovalNoEmail": string;
+        /**
+         * 入力されたメールアドレス({email})宛に確認のメールを送りました。メールに書かれたリンクを開くと、申請が運営の審査に回ります。リンクの有効期限は30分です。
+         */
+        "emailSentForApproval": ParameterizedString<"email">;
+    };
+    "_signupCheck": {
+        /**
+         * 登録の審査状況の確認
+         */
+        "title": string;
+        /**
+         * この端末で申請した新規登録の審査状況を、まとめて確かめられます。ほかの端末で申請したときや、確認コードだけを控えているときは、下から追加してください。
+         */
+        "description": string;
+        /**
+         * 確認コードを追加
+         */
+        "addCode": string;
+        /**
+         * 確認コード
+         */
+        "codeLabel": string;
+        /**
+         * このコードがあれば、あとから審査状況を確かめられます。控えておいてください。
+         */
+        "codeCaption": string;
+        /**
+         * 確認する
+         */
+        "check": string;
+        /**
+         * 審査中です。運営の確認をお待ちください。
+         */
+        "statusPending": string;
+        /**
+         * 承認されました。ログインできます。
+         */
+        "statusApproved": string;
+        /**
+         * この申請は却下されました。
+         */
+        "statusDeclined": string;
+        /**
+         * この確認コードの申請は見つかりませんでした。コードが正しいか確かめてください。
+         */
+        "statusNotFound": string;
+        /**
+         * CAPTCHAの確認に失敗しました。もう一度試してください。
+         */
+        "captchaFailed": string;
+        /**
+         * 確認の回数が多すぎます。しばらく待ってから、もう一度試してください。
+         */
+        "rateLimitExceeded": string;
+        /**
+         * 却下の理由
+         */
+        "declineReason": string;
+        /**
+         * ログインする
+         */
+        "goToSignin": string;
+    };
+    "_signupApprovals": {
+        /**
+         * 新規登録の審査
+         */
+        "title": string;
+        /**
+         * 審査を待っている新規登録の申請があります。
+         */
+        "pendingWarning": string;
+        /**
+         * 審査を待っている申請はありません。
+         */
+        "noPending": string;
+        /**
+         * この状態の申請はありません。
+         */
+        "noHistory": string;
+        /**
+         * 登録の理由
+         */
+        "reason": string;
+        /**
+         * 承認
+         */
+        "approve": string;
+        /**
+         * 却下
+         */
+        "decline": string;
+        /**
+         * @{username} の登録を承認しますか？
+         */
+        "approveConfirm": ParameterizedString<"username">;
+        /**
+         * 却下の理由を入力してください
+         */
+        "declineReasonTitle": string;
+        /**
+         * @{username} のアカウントは削除されます。この操作は取り消せません。却下の理由は、申請した人が審査状況を確かめたときに表示されます。
+         */
+        "declineWarning": ParameterizedString<"username">;
+        /**
+         * 審査待ち
+         */
+        "statusPending": string;
+        /**
+         * 承認済み
+         */
+        "statusApproved": string;
+        /**
+         * 却下済み
+         */
+        "statusDeclined": string;
+        /**
+         * 却下の理由
+         */
+        "declineReason": string;
+        /**
+         * 審査した人
+         */
+        "reviewedBy": string;
     };
     "_accountDelete": {
         /**
@@ -9850,6 +10134,22 @@ export interface Locale extends ILocale {
          * 広告を見る
          */
         "read:admin:ad": string;
+        /**
+         * 承認を待っている新規登録の申請を見る
+         */
+        "read:admin:pending-signups": string;
+        /**
+         * 新規登録の申請を承認する
+         */
+        "write:admin:approve-signup": string;
+        /**
+         * 新規登録の申請を却下する
+         */
+        "write:admin:decline-signup": string;
+        /**
+         * 審査した新規登録の申請の履歴(審査した人を含む)を見る
+         */
+        "read:admin:signup-approval-history": string;
         /**
          * 招待コードを作成する
          */
@@ -11776,6 +12076,14 @@ export interface Locale extends ILocale {
          * プロキシアカウントの説明を更新
          */
         "updateProxyAccountDescription": string;
+        /**
+         * 新規登録の申請を承認
+         */
+        "approveSignup": string;
+        /**
+         * 新規登録の申請を却下
+         */
+        "declineSignup": string;
     };
     "_fileViewer": {
         /**

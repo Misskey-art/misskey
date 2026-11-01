@@ -126,6 +126,8 @@ export class WellKnownServerService {
 				id,
 				host: IsNull(),
 				isSuspended: false,
+				// misskey.art独自: 承認制の新規登録で、まだ承認されていないアカウントはいないものとして扱う
+				approved: true,
 			});
 
 			const generateQuery = (resource: string): FindOptionsWhere<MiUser> | number =>
@@ -141,6 +143,8 @@ export class WellKnownServerService {
 					usernameLower: acct.username.toLowerCase(),
 					host: IsNull(),
 					isSuspended: false,
+					// misskey.art独自: 承認制の新規登録で、まだ承認されていないアカウントはいないものとして扱う
+					approved: true,
 				} : 422;
 
 			if (typeof request.query.resource !== 'string') {

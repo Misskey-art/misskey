@@ -13,7 +13,7 @@ import { describe, beforeAll, test, vi } from 'vitest';
 import { setTimeout } from 'node:timers/promises';
 import { entities } from 'misskey-js';
 import { Redis } from 'ioredis';
-import { SignupResponse, Note } from 'misskey-js/entities.js';
+import { SignupSuccessResponse, Note } from 'misskey-js/entities.js';
 import { api, initTestDb, post, randomString, sendEnvUpdateRequest, signup, uploadUrl, UserToken } from '../utils.js';
 import { loadConfig } from '@/config.js';
 
@@ -24,7 +24,7 @@ function genHost() {
 const waitForPushToTlOptions = { timeout: 3000, interval: 25 };
 
 let redisForTimelines: Redis;
-let root: SignupResponse;
+let root: SignupSuccessResponse;
 
 async function renote(noteId: string, user: UserToken): Promise<entities.Note> {
 	return await api('notes/create', { renoteId: noteId }, user).then(it => it.body.createdNote);
@@ -970,7 +970,7 @@ describe('Timelines', () => {
 			});
 
 			describe('凍結', () => {
-				let alice: SignupResponse, bob: SignupResponse, carol: SignupResponse;
+				let alice: SignupSuccessResponse, bob: SignupSuccessResponse, carol: SignupSuccessResponse;
 				let aliceNote: Note, bobNote: Note, carolNote: Note;
 
 				beforeAll(async () => {
@@ -1015,7 +1015,7 @@ describe('Timelines', () => {
 			});
 
 			describe('凍結 (Renote)', () => {
-				let alice: SignupResponse, bob: SignupResponse, carol: SignupResponse;
+				let alice: SignupSuccessResponse, bob: SignupSuccessResponse, carol: SignupSuccessResponse;
 				let aliceNote: Note, bobNote: Note, carolNote: Note, bobRenote: Note, carolRenote: Note;
 
 				beforeAll(async () => {
@@ -1067,7 +1067,7 @@ describe('Timelines', () => {
 			});
 
 			describe('凍結(リモート)', () => {
-				let alice: SignupResponse, bob: SignupResponse, carol: SignupResponse;
+				let alice: SignupSuccessResponse, bob: SignupSuccessResponse, carol: SignupSuccessResponse;
 				let aliceNote: Note, bobNote: Note, carolNote: Note;
 
 				beforeAll(async () => {
@@ -2111,7 +2111,7 @@ describe('Timelines', () => {
 				 * carol = 未フォローのローカルユーザー (凍結対象)
 				 * dave = フォローしているローカルユーザー (凍結対象)
 				 */
-				let alice: SignupResponse, bob: SignupResponse, carol: SignupResponse, dave: SignupResponse;
+				let alice: SignupSuccessResponse, bob: SignupSuccessResponse, carol: SignupSuccessResponse, dave: SignupSuccessResponse;
 				let aliceNote: Note, bobNote: Note, carolNote: Note, daveNote: Note;
 
 				beforeAll(async () => {
@@ -2163,7 +2163,7 @@ describe('Timelines', () => {
 				 * carol = 未フォローのリモートユーザー (凍結対象)
 				 * elle = フォローしているリモートユーザー (凍結対象)
 				 */
-				let alice: SignupResponse, carol: SignupResponse, elle: SignupResponse;
+				let alice: SignupSuccessResponse, carol: SignupSuccessResponse, elle: SignupSuccessResponse;
 				let aliceNote: Note, carolNote: Note, elleNote: Note;
 
 				beforeAll(async () => {

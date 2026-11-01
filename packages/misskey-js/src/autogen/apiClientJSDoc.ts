@@ -969,6 +969,50 @@ declare module '../api.js' {
     /**
      * No description provided.
      * 
+     * **Credential required**: *Yes* / **Permission**: *write:admin:approve-signup*
+     */
+    request<E extends 'admin/signup-approvals/approve', P extends Endpoints[E]['req']>(
+      endpoint: E,
+      params: P,
+      credential?: string | null,
+    ): Promise<SwitchCaseResponseType<E, P>>;
+
+    /**
+     * No description provided.
+     * 
+     * **Credential required**: *Yes* / **Permission**: *write:admin:decline-signup*
+     */
+    request<E extends 'admin/signup-approvals/decline', P extends Endpoints[E]['req']>(
+      endpoint: E,
+      params: P,
+      credential?: string | null,
+    ): Promise<SwitchCaseResponseType<E, P>>;
+
+    /**
+     * No description provided.
+     * 
+     * **Credential required**: *Yes* / **Permission**: *read:admin:signup-approval-history*
+     */
+    request<E extends 'admin/signup-approvals/history', P extends Endpoints[E]['req']>(
+      endpoint: E,
+      params: P,
+      credential?: string | null,
+    ): Promise<SwitchCaseResponseType<E, P>>;
+
+    /**
+     * No description provided.
+     * 
+     * **Credential required**: *Yes* / **Permission**: *read:admin:pending-signups*
+     */
+    request<E extends 'admin/signup-approvals/pending', P extends Endpoints[E]['req']>(
+      endpoint: E,
+      params: P,
+      credential?: string | null,
+    ): Promise<SwitchCaseResponseType<E, P>>;
+
+    /**
+     * No description provided.
+     * 
      * **Credential required**: *Yes* / **Permission**: *write:admin:suspend-user*
      */
     request<E extends 'admin/suspend-user', P extends Endpoints[E]['req']>(
@@ -4446,6 +4490,17 @@ declare module '../api.js' {
      * **Credential required**: *No*
      */
     request<E extends 'server-info', P extends Endpoints[E]['req']>(
+      endpoint: E,
+      params: P,
+      credential?: string | null,
+    ): Promise<SwitchCaseResponseType<E, P>>;
+
+    /**
+     * Check the approval status of a pending signup application using its check code.
+     * 
+     * **Credential required**: *No*
+     */
+    request<E extends 'signup-check-status', P extends Endpoints[E]['req']>(
       endpoint: E,
       params: P,
       credential?: string | null,

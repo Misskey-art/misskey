@@ -401,6 +401,24 @@ type AdminShowUsersRequest = operations['admin___show-users']['requestBody']['co
 type AdminShowUsersResponse = operations['admin___show-users']['responses']['200']['content']['application/json'];
 
 // @public (undocumented)
+type AdminSignupApprovalsApproveRequest = operations['admin___signup-approvals___approve']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
+type AdminSignupApprovalsDeclineRequest = operations['admin___signup-approvals___decline']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
+type AdminSignupApprovalsHistoryRequest = operations['admin___signup-approvals___history']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
+type AdminSignupApprovalsHistoryResponse = operations['admin___signup-approvals___history']['responses']['200']['content']['application/json'];
+
+// @public (undocumented)
+type AdminSignupApprovalsPendingRequest = operations['admin___signup-approvals___pending']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
+type AdminSignupApprovalsPendingResponse = operations['admin___signup-approvals___pending']['responses']['200']['content']['application/json'];
+
+// @public (undocumented)
 type AdminSuspendUserRequest = operations['admin___suspend-user']['requestBody']['content']['application/json'];
 
 // @public (undocumented)
@@ -1565,6 +1583,8 @@ declare namespace entities {
         AnnouncementReacted,
         AnnouncementUnreacted,
         SignupRequest,
+        SignupSuccessResponse,
+        SignupPendingApprovalResponse,
         SignupResponse,
         SignupPendingRequest,
         SignupPendingResponse,
@@ -1697,6 +1717,12 @@ declare namespace entities {
         AdminShowUserResponse,
         AdminShowUsersRequest,
         AdminShowUsersResponse,
+        AdminSignupApprovalsApproveRequest,
+        AdminSignupApprovalsDeclineRequest,
+        AdminSignupApprovalsHistoryRequest,
+        AdminSignupApprovalsHistoryResponse,
+        AdminSignupApprovalsPendingRequest,
+        AdminSignupApprovalsPendingResponse,
         AdminSuspendUserRequest,
         AdminSystemWebhookCreateRequest,
         AdminSystemWebhookCreateResponse,
@@ -2173,6 +2199,8 @@ declare namespace entities {
         RolesUsersRequest,
         RolesUsersResponse,
         ServerInfoResponse,
+        SignupCheckStatusRequest,
+        SignupCheckStatusResponse,
         StatsResponse,
         SwRegisterRequest,
         SwRegisterResponse,
@@ -2946,7 +2974,7 @@ type ModerationLog = {
 }[keyof ModerationLogPayloads]);
 
 // @public (undocumented)
-export const moderationLogTypes: readonly ["updateServerSettings", "suspend", "unsuspend", "updateUserNote", "addCustomEmoji", "updateCustomEmoji", "deleteCustomEmoji", "assignRole", "unassignRole", "createRole", "updateRole", "deleteRole", "clearQueue", "promoteQueue", "deleteDriveFile", "deleteNote", "createGlobalAnnouncement", "createUserAnnouncement", "updateGlobalAnnouncement", "updateUserAnnouncement", "deleteGlobalAnnouncement", "deleteUserAnnouncement", "resetPassword", "suspendRemoteInstance", "unsuspendRemoteInstance", "updateRemoteInstanceNote", "markSensitiveDriveFile", "unmarkSensitiveDriveFile", "resolveAbuseReport", "forwardAbuseReport", "updateAbuseReportNote", "createInvitation", "createAd", "updateAd", "deleteAd", "createAvatarDecoration", "updateAvatarDecoration", "deleteAvatarDecoration", "unsetMfa", "unsetUserAvatar", "unsetUserBanner", "createSystemWebhook", "updateSystemWebhook", "deleteSystemWebhook", "createAbuseReportNotificationRecipient", "updateAbuseReportNotificationRecipient", "deleteAbuseReportNotificationRecipient", "deleteAccount", "deletePage", "deleteFlash", "deleteGalleryPost", "deleteChatRoom", "updateProxyAccountDescription"];
+export const moderationLogTypes: readonly ["updateServerSettings", "suspend", "unsuspend", "updateUserNote", "addCustomEmoji", "updateCustomEmoji", "deleteCustomEmoji", "assignRole", "unassignRole", "createRole", "updateRole", "deleteRole", "clearQueue", "promoteQueue", "deleteDriveFile", "deleteNote", "createGlobalAnnouncement", "createUserAnnouncement", "updateGlobalAnnouncement", "updateUserAnnouncement", "deleteGlobalAnnouncement", "deleteUserAnnouncement", "resetPassword", "suspendRemoteInstance", "unsuspendRemoteInstance", "updateRemoteInstanceNote", "markSensitiveDriveFile", "unmarkSensitiveDriveFile", "resolveAbuseReport", "forwardAbuseReport", "updateAbuseReportNote", "createInvitation", "createAd", "updateAd", "deleteAd", "createAvatarDecoration", "updateAvatarDecoration", "deleteAvatarDecoration", "unsetMfa", "unsetUserAvatar", "unsetUserBanner", "createSystemWebhook", "updateSystemWebhook", "deleteSystemWebhook", "createAbuseReportNotificationRecipient", "updateAbuseReportNotificationRecipient", "deleteAbuseReportNotificationRecipient", "deleteAccount", "deletePage", "deleteFlash", "deleteGalleryPost", "deleteChatRoom", "updateProxyAccountDescription", "approveSignup", "declineSignup"];
 
 // @public (undocumented)
 type MuteCreateRequest = operations['mute___create']['requestBody']['content']['application/json'];
@@ -3250,7 +3278,7 @@ type PartialRolePolicyOverride = Partial<{
 }>;
 
 // @public (undocumented)
-export const permissions: readonly ["read:account", "write:account", "read:blocks", "write:blocks", "read:drive", "write:drive", "read:favorites", "write:favorites", "read:following", "write:following", "read:messaging", "write:messaging", "read:mutes", "write:mutes", "write:notes", "read:notifications", "write:notifications", "read:reactions", "write:reactions", "write:votes", "read:pages", "write:pages", "write:page-likes", "read:page-likes", "read:user-groups", "write:user-groups", "read:channels", "write:channels", "read:gallery", "write:gallery", "read:gallery-likes", "write:gallery-likes", "read:flash", "write:flash", "read:flash-likes", "write:flash-likes", "read:admin:abuse-user-reports", "write:admin:delete-account", "write:admin:delete-all-files-of-a-user", "read:admin:index-stats", "read:admin:table-stats", "read:admin:user-ips", "read:admin:meta", "write:admin:reset-password", "write:admin:resolve-abuse-user-report", "write:admin:send-email", "read:admin:server-info", "read:admin:show-moderation-log", "read:admin:show-user", "write:admin:suspend-user", "write:admin:unset-mfa", "write:admin:unset-user-avatar", "write:admin:unset-user-banner", "write:admin:unsuspend-user", "write:admin:meta", "write:admin:user-note", "write:admin:roles", "read:admin:roles", "write:admin:relays", "read:admin:relays", "write:admin:invite-codes", "read:admin:invite-codes", "write:admin:announcements", "read:admin:announcements", "write:admin:avatar-decorations", "read:admin:avatar-decorations", "write:admin:federation", "write:admin:account", "read:admin:account", "write:admin:emoji", "read:admin:emoji", "write:admin:queue", "read:admin:queue", "write:admin:promo", "write:admin:drive", "read:admin:drive", "write:admin:ad", "read:admin:ad", "write:invite-codes", "read:invite-codes", "write:clip-favorite", "read:clip-favorite", "read:federation", "write:report-abuse", "write:chat", "read:chat"];
+export const permissions: readonly ["read:account", "write:account", "read:blocks", "write:blocks", "read:drive", "write:drive", "read:favorites", "write:favorites", "read:following", "write:following", "read:messaging", "write:messaging", "read:mutes", "write:mutes", "write:notes", "read:notifications", "write:notifications", "read:reactions", "write:reactions", "write:votes", "read:pages", "write:pages", "write:page-likes", "read:page-likes", "read:user-groups", "write:user-groups", "read:channels", "write:channels", "read:gallery", "write:gallery", "read:gallery-likes", "write:gallery-likes", "read:flash", "write:flash", "read:flash-likes", "write:flash-likes", "read:admin:abuse-user-reports", "write:admin:delete-account", "write:admin:delete-all-files-of-a-user", "read:admin:index-stats", "read:admin:table-stats", "read:admin:user-ips", "read:admin:meta", "write:admin:reset-password", "write:admin:resolve-abuse-user-report", "write:admin:send-email", "read:admin:server-info", "read:admin:show-moderation-log", "read:admin:show-user", "write:admin:suspend-user", "write:admin:unset-mfa", "write:admin:unset-user-avatar", "write:admin:unset-user-banner", "write:admin:unsuspend-user", "write:admin:meta", "write:admin:user-note", "write:admin:roles", "read:admin:roles", "write:admin:relays", "read:admin:relays", "write:admin:invite-codes", "read:admin:invite-codes", "write:admin:announcements", "read:admin:announcements", "write:admin:avatar-decorations", "read:admin:avatar-decorations", "write:admin:federation", "write:admin:account", "read:admin:account", "write:admin:emoji", "read:admin:emoji", "write:admin:queue", "read:admin:queue", "write:admin:promo", "write:admin:drive", "read:admin:drive", "write:admin:ad", "read:admin:ad", "read:admin:pending-signups", "write:admin:approve-signup", "write:admin:decline-signup", "read:admin:signup-approval-history", "write:invite-codes", "read:invite-codes", "write:clip-favorite", "read:clip-favorite", "read:federation", "write:report-abuse", "write:chat", "read:chat"];
 
 // @public (undocumented)
 type PingResponse = operations['ping']['responses']['200']['content']['application/json'];
@@ -3402,7 +3430,7 @@ type RoleLite = components['schemas']['RoleLite'];
 type RolePolicies = components['schemas']['RolePolicies'];
 
 // @public (undocumented)
-export const rolePolicies: readonly ["gtlAvailable", "ltlAvailable", "canPublicNote", "mentionLimit", "canInvite", "inviteLimit", "inviteLimitCycle", "inviteExpirationTime", "canManageCustomEmojis", "canManageAvatarDecorations", "canSearchNotes", "canSearchUsers", "canUseTranslator", "canHideAds", "canCreateChannel", "driveCapacityMb", "maxFileSizeMb", "alwaysMarkNsfw", "canUpdateBioMedia", "pinLimit", "antennaLimit", "wordMuteLimit", "webhookLimit", "clipLimit", "noteEachClipsLimit", "userListLimit", "userEachUserListsLimit", "rateLimitFactor", "avatarDecorationLimit", "canImportAntennas", "canImportBlocking", "canImportFollowing", "canImportMuting", "canImportUserLists", "chatAvailability", "uploadableFileTypes", "noteDraftLimit", "scheduledNoteLimit", "watermarkAvailable", "announcementReactionTypeLimit"];
+export const rolePolicies: readonly ["gtlAvailable", "ltlAvailable", "canPublicNote", "mentionLimit", "canInvite", "inviteLimit", "inviteLimitCycle", "inviteExpirationTime", "canManageCustomEmojis", "canManageAvatarDecorations", "canSearchNotes", "canSearchUsers", "canUseTranslator", "canHideAds", "canCreateChannel", "driveCapacityMb", "maxFileSizeMb", "alwaysMarkNsfw", "canUpdateBioMedia", "pinLimit", "antennaLimit", "wordMuteLimit", "webhookLimit", "clipLimit", "noteEachClipsLimit", "userListLimit", "userEachUserListsLimit", "rateLimitFactor", "avatarDecorationLimit", "canImportAntennas", "canImportBlocking", "canImportFollowing", "canImportMuting", "canImportUserLists", "chatAvailability", "uploadableFileTypes", "noteDraftLimit", "scheduledNoteLimit", "watermarkAvailable", "announcementReactionTypeLimit", "canApproveSignups"];
 
 // @public (undocumented)
 type RolesListResponse = operations['roles___list']['responses']['200']['content']['application/json'];
@@ -3498,6 +3526,18 @@ type SigninWithPasskeyResponse = {
 };
 
 // @public (undocumented)
+type SignupCheckStatusRequest = operations['signup-check-status']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
+type SignupCheckStatusResponse = operations['signup-check-status']['responses']['200']['content']['application/json'];
+
+// @public (undocumented)
+type SignupPendingApprovalResponse = {
+    pendingApproval: true;
+    checkCode: string;
+};
+
+// @public (undocumented)
 type SignupPendingRequest = {
     code: string;
 };
@@ -3506,7 +3546,7 @@ type SignupPendingRequest = {
 type SignupPendingResponse = {
     id: User['id'];
     i: string;
-};
+} | SignupPendingApprovalResponse;
 
 // @public (undocumented)
 type SignupRequest = {
@@ -3515,6 +3555,7 @@ type SignupRequest = {
     host?: string;
     invitationCode?: string;
     emailAddress?: string;
+    reason?: string;
     'hcaptcha-response'?: string | null;
     'g-recaptcha-response'?: string | null;
     'turnstile-response'?: string | null;
@@ -3523,7 +3564,10 @@ type SignupRequest = {
 };
 
 // @public (undocumented)
-type SignupResponse = MeDetailed & {
+type SignupResponse = SignupSuccessResponse | SignupPendingApprovalResponse;
+
+// @public (undocumented)
+type SignupSuccessResponse = MeDetailed & {
     token: string;
 };
 

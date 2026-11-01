@@ -13,7 +13,7 @@ import type * as misskey from 'misskey-js';
 const waitForPushToTlOptions = { timeout: 3000, interval: 25 };
 
 describe('users/notes', () => {
-	let alice: misskey.entities.SignupResponse;
+	let alice: misskey.entities.SignupSuccessResponse;
 	let jpgNote: misskey.entities.Note;
 	let pngNote: misskey.entities.Note;
 	let jpgPngNote: misskey.entities.Note;
