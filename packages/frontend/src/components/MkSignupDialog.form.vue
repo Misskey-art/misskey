@@ -10,9 +10,11 @@ SPDX-License-Identifier: AGPL-3.0-only
 	</div>
 	<div class="_spacer" style="--MI_SPACER-min: 20px; --MI_SPACER-max: 32px;">
 		<form class="_gaps_m" autocomplete="new-password" @submit.prevent="onSubmit">
-			<MkInput v-if="instance.disableRegistration" v-model="invitationCode" type="text" :spellcheck="false" required data-testid="signup-invitation-code">
+			<MkInfo v-if="showReasonField" warn data-testid="signup-approval-notice">{{ i18n.ts._signup.approvalNotice }}</MkInfo>
+			<MkInput v-if="instance.disableRegistration" v-model="invitationCode" type="text" :spellcheck="false" :required="invitationCodeRequired" data-testid="signup-invitation-code">
 				<template #label>{{ i18n.ts.invitationCode }}</template>
 				<template #prefix><i class="ti ti-key"></i></template>
+				<template v-if="!invitationCodeRequired" #caption>{{ i18n.ts._signup.invitationCodeOptional }}</template>
 			</MkInput>
 			<MkInput v-model="username" type="text" pattern="^[a-zA-Z0-9_]{1,20}$" :spellcheck="false" autocomplete="username" required data-testid="signup-username" @update:modelValue="onChangeUsername">
 				<template #label>{{ i18n.ts.username }} <div v-tooltip:dialog="i18n.ts.usernameInfo" class="_button _help"><i class="ti ti-help-circle"></i></div></template>
@@ -29,6 +31,13 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<span v-else-if="usernameState === 'max-range'" style="color: var(--MI_THEME-error)"><i class="ti ti-alert-triangle ti-fw"></i> {{ i18n.ts.tooLong }}</span>
 				</template>
 			</MkInput>
+			<MkTextarea v-if="showReasonField" v-model="reason" :required="instance.signupReasonRequired" data-testid="signup-reason">
+				<template #label>{{ i18n.ts._signup.reason }}</template>
+				<template #caption>
+					<div>{{ i18n.tsx._signup.reasonCaption({ max: instance.signupReasonMaxLength }) }}</div>
+					<span v-if="isReasonTooLong" style="color: var(--MI_THEME-error)"><i class="ti ti-alert-triangle ti-fw"></i> {{ i18n.ts.tooLong }}</span>
+				</template>
+			</MkTextarea>
 			<MkInput v-if="instance.emailRequiredForSignup" v-model="email" :debounce="true" type="email" :spellcheck="false" required data-testid="signup-email" @update:modelValue="onChangeEmail">
 				<template #label>{{ i18n.ts.emailAddress }} <div v-tooltip:dialog="i18n.ts._signup.emailAddressInfo" class="_button _help"><i class="ti ti-help-circle"></i></div></template>
 				<template #prefix><i class="ti ti-mail"></i></template>
@@ -73,7 +82,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<template v-if="submitting">
 					<MkLoading :em="true" :colored="false"/>
 				</template>
-				<template v-else>{{ i18n.ts.start }}</template>
+				<template v-else>{{ showReasonField ? i18n.ts._signup.apply : i18n.ts.start }}</template>
 			</MkButton>
 		</form>
 	</div>
@@ -81,12 +90,14 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts" setup>
-import { ref, computed } from 'vue';
+import { ref, computed, defineAsyncComponent } from 'vue';
 import { toUnicode } from 'punycode.js';
 import * as Misskey from 'misskey-js';
 import * as config from '@@/js/config.js';
 import MkButton from './MkButton.vue';
 import MkInput from './MkInput.vue';
+import MkTextarea from './MkTextarea.vue';
+import MkInfo from './MkInfo.vue';
 import type { Captcha } from '@/components/MkCaptcha.vue';
 import MkCaptcha from '@/components/MkCaptcha.vue';
 import * as os from '@/os.js';
@@ -94,6 +105,7 @@ import { misskeyApi } from '@/utility/misskey-api.js';
 import { instance } from '@/instance.js';
 import { i18n } from '@/i18n.js';
 import { login } from '@/accounts.js';
+import { addSignupApprovalCheckCode } from '@/utility/signup-approval-check-codes.js';
 
 const props = withDefaults(defineProps<{
 	autoSet?: boolean;
@@ -102,8 +114,9 @@ const props = withDefaults(defineProps<{
 });
 
 const emit = defineEmits<{
-	(ev: 'signup', user: Misskey.entities.SignupResponse): void;
+	(ev: 'signup', user: Misskey.entities.SignupSuccessResponse): void;
 	(ev: 'signupEmailPending'): void;
+	(ev: 'signupPendingApproval'): void;
 }>();
 
 const host = toUnicode(config.host);
@@ -119,6 +132,7 @@ const password = ref<string>('');
 const retypedPassword = ref<string>('');
 const invitationCode = ref<string>('');
 const email = ref('');
+const reason = ref('');
 const usernameState = ref<null | 'wait' | 'ok' | 'unavailable' | 'error' | 'invalid-format' | 'min-range' | 'max-range'>(null);
 const emailState = ref<null | 'wait' | 'ok' | 'unavailable:used' | 'unavailable:format' | 'unavailable:disposable' | 'unavailable:banned' | 'unavailable:mx' | 'unavailable:smtp' | 'unavailable:plusTag' | 'unavailable:gmailDot' | 'unavailable' | 'error'>(null);
 const passwordStrength = ref<'' | 'low' | 'medium' | 'high'>('');
@@ -132,6 +146,18 @@ const testcaptchaResponse = ref<string | null>(null);
 const usernameAbortController = ref<null | AbortController>(null);
 const emailAbortController = ref<null | AbortController>(null);
 
+// misskey.art独自: 承認制の新規登録がオンなら、招待コードは任意になる(無ければ理由を書いて申請する)
+const invitationCodeRequired = computed((): boolean => instance.disableRegistration && !instance.approvalRequiredForSignup);
+
+// misskey.art独自: 有効な招待コードを使った登録は審査しないので、招待コードを入れたら理由の欄を隠す。
+// (招待コードを確かめるのは、アカウントの作成をオープンにしていないときだけなので、そのときだけ)
+const showReasonField = computed((): boolean => {
+	if (!instance.approvalRequiredForSignup) return false;
+	return !(instance.disableRegistration && invitationCode.value !== '');
+});
+
+const isReasonTooLong = computed((): boolean => reason.value.length > instance.signupReasonMaxLength);
+
 const shouldDisableSubmitting = computed((): boolean => {
 	return submitting.value ||
 		instance.enableHcaptcha && !hCaptchaResponse.value ||
@@ -140,7 +166,9 @@ const shouldDisableSubmitting = computed((): boolean => {
 		instance.enableTurnstile && !turnstileResponse.value ||
 		instance.enableTestcaptcha && !testcaptchaResponse.value ||
 		instance.emailRequiredForSignup && emailState.value !== 'ok' ||
-		instance.disableRegistration && invitationCode.value === '' ||
+		invitationCodeRequired.value && invitationCode.value === '' ||
+		showReasonField.value && instance.signupReasonRequired && reason.value.trim() === '' ||
+		showReasonField.value && isReasonTooLong.value ||
 		usernameState.value !== 'ok' ||
 		passwordRetypeState.value !== 'match';
 });
@@ -265,6 +293,7 @@ async function onSubmit(): Promise<void> {
 		password: password.value,
 		emailAddress: email.value,
 		invitationCode: invitationCode.value,
+		reason: showReasonField.value ? reason.value : undefined,
 		'hcaptcha-response': hCaptchaResponse.value,
 		'm-captcha-response': mCaptchaResponse.value,
 		'g-recaptcha-response': reCaptchaResponse.value,
@@ -288,17 +317,34 @@ async function onSubmit(): Promise<void> {
 			os.alert({
 				type: 'success',
 				title: i18n.ts._signup.almostThere,
-				text: i18n.tsx._signup.emailSent({ email: email.value }),
+				// misskey.art独自: 承認制の新規登録では、メールアドレスを確認してもアカウントはまだできず、申請が審査に回る
+				text: showReasonField.value
+					? i18n.tsx._signup.emailSentForApproval({ email: email.value })
+					: i18n.tsx._signup.emailSent({ email: email.value }),
 			});
 			emit('signupEmailPending');
 		} else {
 			const resJson = (await res.json()) as Misskey.entities.SignupResponse;
 			if (_DEV_) console.log(resJson);
 
-			emit('signup', resJson);
+			if ('pendingApproval' in resJson) {
+				// misskey.art独自: 承認を待つアカウントにはトークンが無い。代わりの確認コードをこの端末に保存し、
+				// /signup-check でいつでも審査状況を確かめられるようにする。
+				// メールアドレスの確認が要るときは上で分かれているので、ここではメールアドレスを集めていない
+				addSignupApprovalCheckCode(resJson.checkCode);
+				const { dispose } = os.popup(defineAsyncComponent(() => import('@/components/MkSignupApprovalPendingDialog.vue')), {
+					text: i18n.ts._signup.pendingApprovalNoEmail,
+					code: resJson.checkCode,
+				}, {
+					closed: () => dispose(),
+				});
+				emit('signupPendingApproval');
+			} else {
+				emit('signup', resJson);
 
-			if (props.autoSet) {
-				await login(resJson.token);
+				if (props.autoSet) {
+					await login(resJson.token);
+				}
 			}
 		}
 	} else {

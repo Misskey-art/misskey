@@ -11,13 +11,13 @@ import { api, signup, simpleGet } from '../utils.js';
 import type * as misskey from 'misskey-js';
 
 describe('FF visibility', () => {
-	let alice: misskey.entities.SignupResponse;
-	let bob: misskey.entities.SignupResponse;
+	let alice: misskey.entities.SignupSuccessResponse;
+	let bob: misskey.entities.SignupSuccessResponse;
 
 	beforeAll(async () => {
 		alice = await signup({ username: 'alice' });
 		bob = await signup({ username: 'bob' });
-		await api('admin/update-meta', { federation: 'all' }, alice as misskey.entities.SignupResponse);
+		await api('admin/update-meta', { federation: 'all' }, alice as misskey.entities.SignupSuccessResponse);
 	}, 1000 * 60 * 2);
 
 	test('followingVisibility, followersVisibility がともに public なユーザーのフォロー/フォロワーを誰でも見れる', async () => {

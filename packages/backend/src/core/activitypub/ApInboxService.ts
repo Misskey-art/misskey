@@ -180,7 +180,8 @@ export class ApInboxService {
 	private async follow(actor: MiRemoteUser, activity: IFollow): Promise<string> {
 		const followee = await this.apDbResolverService.getUserFromApId(activity.object);
 
-		if (followee == null) {
+		// misskey.art独自: 承認を待っているアカウントは、無いアカウントと同じに扱う
+		if (followee == null || !followee.approved) {
 			return 'skip: followee not found';
 		}
 

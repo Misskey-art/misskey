@@ -70,6 +70,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 			if (typeof ps.userId !== 'undefined') {
 				const user = await this.usersRepository.findOneBy({ id: ps.userId });
 				if (user === null) throw new ApiError(meta.errors.noSuchUser);
+				// misskey.art独自: 承認を待っているアカウントは、無いアカウントと同じに見せる
+				if (!user.approved) throw new ApiError(meta.errors.noSuchUser);
 				if (user.host !== null) throw new ApiError(meta.errors.remoteUser);
 			} else if (me === null) {
 				throw new ApiError(meta.errors.invalidParam);

@@ -626,6 +626,25 @@ export class MiMeta {
 	})
 	public followApprovalDefaultRemoteSeconds: number;
 
+	// misskey.art独自: 新規登録を承認制にするか(登録したアカウントは、モデレーターが承認するまでサインインできない)。
+	// 有効な招待コードで登録したときは、承認を待たない
+	@Column('boolean', {
+		default: false,
+	})
+	public approvalRequiredForSignup: boolean;
+
+	// misskey.art独自: 承認制の新規登録で、登録の理由の入力を必須にするか
+	@Column('boolean', {
+		default: true,
+	})
+	public signupReasonRequired: boolean;
+
+	// misskey.art独自: 承認制の新規登録で、登録の理由に書ける長さの上限
+	@Column('integer', {
+		default: 4096,
+	})
+	public signupReasonMaxLength: number;
+
 	@Column('varchar', {
 		length: 1024, array: true, default: ['admin', 'administrator', 'root', 'system', 'maintainer', 'host', 'mod', 'moderator', 'owner', 'superuser', 'staff', 'auth', 'i', 'me', 'everyone', 'all', 'mention', 'mentions', 'example', 'user', 'users', 'account', 'accounts', 'official', 'help', 'helps', 'support', 'supports', 'info', 'information', 'informations', 'announce', 'announces', 'announcement', 'announcements', 'notice', 'notification', 'notifications', 'dev', 'developer', 'developers', 'tech', 'misskey'],
 	})

@@ -11,7 +11,7 @@ import { signup, uploadFile, relativeFetch } from '../utils.js';
 import type * as misskey from 'misskey-js';
 
 describe('validateContentTypeSetAsActivityPub/JsonLD (deny case)', () => {
-	let alice: misskey.entities.SignupResponse;
+	let alice: misskey.entities.SignupSuccessResponse;
 	let aliceUploadedFile: any;
 
 	beforeAll(async () => {

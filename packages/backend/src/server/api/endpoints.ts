@@ -42,6 +42,13 @@ interface IEndpointMetaBase {
 	readonly requiredRolePolicy?: KeyOf<'RolePolicies'>;
 
 	/**
+	 * misskey.art独自: requiredRolePolicyと同じだが、isModerator/isAdministratorなロールを持つ
+	 * ユーザーも常に許可する。モデレーターの作業を、ロールでモデレーター以外の人にも個別に任せるためのもの。
+	 * requireCredential: true と一緒に使うこと
+	 */
+	readonly requiredRolePolicyOrModerator?: KeyOf<'RolePolicies'>;
+
+	/**
 	 * 引っ越し済みのユーザーによるリクエストを禁止するか
 	 * 省略した場合は false として解釈されます。
 	 */

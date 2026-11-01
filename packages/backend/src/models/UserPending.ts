@@ -31,4 +31,10 @@ export class MiUserPending {
 		length: 128,
 	})
 	public password: string;
+
+	// misskey.art独自: 承認制の新規登録で、申請者が書いた登録の理由(メールアドレスの確認が済んでアカウントを作るときに使う)
+	@Column('text', {
+		nullable: true,
+	})
+	public reason: string | null;
 }

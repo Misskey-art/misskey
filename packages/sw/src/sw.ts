@@ -202,7 +202,7 @@ globalThis.addEventListener('notificationclick', (ev: ServiceWorkerGlobalScopeEv
 					case 'markAllAsRead':
 						await globalThis.registration.getNotifications()
 							.then(notifications => notifications.forEach(n => n.tag !== 'read_notification' && n.close()));
-						await get<Pick<Misskey.entities.SignupResponse, 'id' | 'token'>[]>('accounts').then(accounts => {
+						await get<Pick<Misskey.entities.SignupSuccessResponse, 'id' | 'token'>[]>('accounts').then(accounts => {
 							return Promise.all((accounts ?? []).map(async account => {
 								await swos.sendMarkAllAsRead(account.id);
 							}));

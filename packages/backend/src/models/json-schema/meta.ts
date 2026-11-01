@@ -82,6 +82,19 @@ export const packedMetaLiteSchema = {
 			type: 'boolean',
 			optional: false, nullable: false,
 		},
+		// misskey.art独自: 承認制の新規登録(有効なら、登録したアカウントはモデレーターが承認するまで使えない)と、登録の理由の必須・長さの上限
+		approvalRequiredForSignup: {
+			type: 'boolean',
+			optional: false, nullable: false,
+		},
+		signupReasonRequired: {
+			type: 'boolean',
+			optional: false, nullable: false,
+		},
+		signupReasonMaxLength: {
+			type: 'integer',
+			optional: false, nullable: false,
+		},
 		// misskey.art独自: 「新しいアカウントからのフォローを承認制にする」で「既定値を使う」にしているときの期間(秒)。0なら無効
 		followApprovalDefaultLocalSeconds: {
 			type: 'integer',

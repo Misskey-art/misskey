@@ -81,6 +81,9 @@ export const paramDef = {
 		cacheRemoteFiles: { type: 'boolean' },
 		cacheRemoteSensitiveFiles: { type: 'boolean' },
 		emailRequiredForSignup: { type: 'boolean' },
+		approvalRequiredForSignup: { type: 'boolean' },
+		signupReasonRequired: { type: 'boolean' },
+		signupReasonMaxLength: { type: 'integer', minimum: 1, maximum: 100000 },
 		enableHcaptcha: { type: 'boolean' },
 		hcaptchaSiteKey: { type: 'string', nullable: true },
 		hcaptchaSecretKey: { type: 'string', nullable: true },
@@ -375,6 +378,19 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			if (ps.emailRequiredForSignup !== undefined) {
 				set.emailRequiredForSignup = ps.emailRequiredForSignup;
+			}
+
+			// misskey.art独自: 承認制の新規登録
+			if (ps.approvalRequiredForSignup !== undefined) {
+				set.approvalRequiredForSignup = ps.approvalRequiredForSignup;
+			}
+
+			if (ps.signupReasonRequired !== undefined) {
+				set.signupReasonRequired = ps.signupReasonRequired;
+			}
+
+			if (ps.signupReasonMaxLength !== undefined) {
+				set.signupReasonMaxLength = ps.signupReasonMaxLength;
 			}
 
 			if (ps.enableHcaptcha !== undefined) {

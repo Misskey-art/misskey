@@ -18,7 +18,7 @@ export async function api<
 	E extends keyof Misskey.Endpoints,
 	P extends Misskey.Endpoints[E]['req'],
 >(endpoint: E, userId?: string, params?: P): Promise<Misskey.api.SwitchCaseResponseType<E, P> | undefined> {
-	let account: Pick<Misskey.entities.SignupResponse, 'id' | 'token'> | undefined;
+	let account: Pick<Misskey.entities.SignupSuccessResponse, 'id' | 'token'> | undefined;
 
 	if (userId) {
 		account = await getAccountFromId(userId);

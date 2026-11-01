@@ -137,7 +137,7 @@ function timeoutPromise<T>(p: Promise<T>, timeout: number): Promise<T> {
 	]);
 }
 
-export const signup = async (params?: Partial<misskey.Endpoints['signup']['req']>): Promise<NonNullable<misskey.Endpoints['signup']['res']>> => {
+export const signup = async (params?: Partial<misskey.Endpoints['signup']['req']>): Promise<misskey.entities.SignupSuccessResponse> => {
 	const q = Object.assign({
 		username: randomString(),
 		password: 'test',
@@ -145,7 +145,12 @@ export const signup = async (params?: Partial<misskey.Endpoints['signup']['req']
 
 	const res = await api('signup', q);
 
-	return res.body;
+	// misskey.art独自: 承認制の新規登録で承認待ちになったとき(トークンが無い)は、このヘルパーでは扱わない
+	if (res.body != null && 'pendingApproval' in res.body) {
+		throw new Error('signup() helper does not support the approval-pending flow; call api(\'signup\', ...) directly and narrow the response for that test case');
+	}
+
+	return res.body as misskey.entities.SignupSuccessResponse;
 };
 
 export const post = async (user: UserToken, params: misskey.Endpoints['notes/create']['req']): Promise<misskey.entities.Note> => {

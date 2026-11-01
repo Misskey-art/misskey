@@ -35,6 +35,18 @@ export const meta = {
 				type: 'boolean',
 				optional: false, nullable: false,
 			},
+			approvalRequiredForSignup: {
+				type: 'boolean',
+				optional: false, nullable: false,
+			},
+			signupReasonRequired: {
+				type: 'boolean',
+				optional: false, nullable: false,
+			},
+			signupReasonMaxLength: {
+				type: 'integer',
+				optional: false, nullable: false,
+			},
 			enableHcaptcha: {
 				type: 'boolean',
 				optional: false, nullable: false,
@@ -707,6 +719,9 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				inquiryUrl: instance.inquiryUrl,
 				disableRegistration: instance.disableRegistration,
 				emailRequiredForSignup: instance.emailRequiredForSignup,
+				approvalRequiredForSignup: instance.approvalRequiredForSignup,
+				signupReasonRequired: instance.signupReasonRequired,
+				signupReasonMaxLength: instance.signupReasonMaxLength,
 				enableHcaptcha: instance.enableHcaptcha,
 				hcaptchaSiteKey: instance.hcaptchaSiteKey,
 				enableMcaptcha: instance.enableMcaptcha,

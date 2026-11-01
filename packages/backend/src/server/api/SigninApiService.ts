@@ -180,6 +180,17 @@ export class SigninApiService {
 			return error(status ?? 500, failure ?? { id: '4e30e80c-e338-45a0-8c8f-44455efa3b76' });
 		};
 
+		// misskey.art独自: 承認制の新規登録で、まだ承認されていないアカウントはサインインさせない。
+		// 承認を待っていることは、パスワード(と二段階認証)が合っていたときだけ伝える(他人が状態を調べられないように)
+		const signinIfApproved = () => {
+			if (!user.approved) {
+				return error(403, {
+					id: '9f2f084b-af33-4f06-93cf-8a7fe04c6786',
+				});
+			}
+			return this.signinService.signin(request, reply, user);
+		};
+
 		if (!profile.twoFactorEnabled) {
 			if (process.env.NODE_ENV !== 'test') {
 				if (this.meta.enableHcaptcha && this.meta.hcaptchaSecretKey) {
@@ -214,7 +225,7 @@ export class SigninApiService {
 			}
 
 			if (same) {
-				return this.signinService.signin(request, reply, user);
+				return signinIfApproved();
 			} else {
 				return await fail(403, {
 					id: '932c904e-9460-45b7-9ce6-7ed33be7eb2c',
@@ -237,7 +248,7 @@ export class SigninApiService {
 				});
 			}
 
-			return this.signinService.signin(request, reply, user);
+			return signinIfApproved();
 		} else if (body.credential) {
 			if (!same && !profile.usePasswordLessLogin) {
 				return await fail(403, {
@@ -248,7 +259,7 @@ export class SigninApiService {
 			const authorized = await this.webAuthnService.verifyAuthentication(user.id, body.credential);
 
 			if (authorized) {
-				return this.signinService.signin(request, reply, user);
+				return signinIfApproved();
 			} else {
 				return await fail(403, {
 					id: '93b86c4b-72f9-40eb-9815-798928603d1e',

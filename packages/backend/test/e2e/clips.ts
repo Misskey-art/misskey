@@ -14,8 +14,8 @@ import type * as Misskey from 'misskey-js';
 type Optional<T, K extends keyof T> = Pick<Partial<T>, K> & Omit<T, K>;
 
 describe('クリップ', () => {
-	let alice: Misskey.entities.SignupResponse;
-	let bob: Misskey.entities.SignupResponse;
+	let alice: Misskey.entities.SignupSuccessResponse;
+	let bob: Misskey.entities.SignupSuccessResponse;
 	let aliceNote: Misskey.entities.Note;
 	let aliceHomeNote: Misskey.entities.Note;
 	let aliceFollowersNote: Misskey.entities.Note;

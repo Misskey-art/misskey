@@ -75,6 +75,8 @@ export type RolePolicies = {
 	watermarkAvailable: boolean;
 	/** misskey.art独自: お知らせ1件に付けられるリアクションの種類数の上限 */
 	announcementReactionTypeLimit: number;
+	// misskey.art独自: 承認制の新規登録で、申請を承認・却下できるか(モデレーター・管理者は常にできる)
+	canApproveSignups: boolean;
 };
 
 export const DEFAULT_POLICIES: RolePolicies = {
@@ -124,6 +126,7 @@ export const DEFAULT_POLICIES: RolePolicies = {
 	scheduledNoteLimit: 1,
 	watermarkAvailable: true,
 	announcementReactionTypeLimit: 20,
+	canApproveSignups: false,
 };
 
 @Injectable()
@@ -456,6 +459,7 @@ export class RoleService implements OnApplicationShutdown, OnModuleInit {
 			scheduledNoteLimit: calc('scheduledNoteLimit', vs => Math.max(...vs)),
 			watermarkAvailable: calc('watermarkAvailable', vs => vs.some(v => v === true)),
 			announcementReactionTypeLimit: calc('announcementReactionTypeLimit', vs => Math.max(...vs)),
+			canApproveSignups: calc('canApproveSignups', vs => vs.some(v => v === true)),
 		};
 	}
 

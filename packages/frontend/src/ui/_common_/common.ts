@@ -47,6 +47,17 @@ function toolsMenuItems(): MenuItem[] {
 		});
 	}
 
+	// misskey.art独自: 新規登録の審査。モデレーターでなくても、ロールポリシーで任された人が開けるようにする
+	if ($i && ($i.isModerator || $i.isAdmin || $i.policies.canApproveSignups)) {
+		items.push({
+			type: 'link',
+			to: '/signup-approvals-manager',
+			text: i18n.ts._signupApprovals.title,
+			icon: 'ti ti-user-question',
+			badge: true,
+		});
+	}
+
 	return items;
 }
 

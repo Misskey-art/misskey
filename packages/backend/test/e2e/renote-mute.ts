@@ -14,9 +14,9 @@ const waitForPushToTlOptions = { timeout: 3000, interval: 25 };
 
 describe('Renote Mute', () => {
 	// alice mutes carol
-	let alice: misskey.entities.SignupResponse;
-	let bob: misskey.entities.SignupResponse;
-	let carol: misskey.entities.SignupResponse;
+	let alice: misskey.entities.SignupSuccessResponse;
+	let bob: misskey.entities.SignupSuccessResponse;
+	let carol: misskey.entities.SignupSuccessResponse;
 
 	beforeAll(async () => {
 		alice = await signup({ username: 'alice' });

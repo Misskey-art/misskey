@@ -135,6 +135,9 @@ export const moderationLogTypes = [
 	'deleteGalleryPost',
 	'deleteChatRoom',
 	'updateProxyAccountDescription',
+	// misskey.art独自: 承認制の新規登録の承認・却下
+	'approveSignup',
+	'declineSignup',
 ] as const;
 
 export type ModerationLogPayloads = {
@@ -401,6 +404,18 @@ export type ModerationLogPayloads = {
 	updateProxyAccountDescription: {
 		before: string | null;
 		after: string | null;
+	};
+	// misskey.art独自
+	approveSignup: {
+		userId: string;
+		userUsername: string;
+		userHost: string | null;
+	};
+	declineSignup: {
+		userId: string;
+		userUsername: string;
+		userHost: string | null;
+		reason: string;
 	};
 };
 

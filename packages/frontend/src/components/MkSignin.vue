@@ -306,6 +306,19 @@ function onSigninApiError(err?: any): void {
 			showSuspendedDialog();
 			break;
 		}
+		case '9f2f084b-af33-4f06-93cf-8a7fe04c6786': {
+			// misskey.art独自: 承認制の新規登録で、まだ承認されていないアカウント。審査状況の確認ページを開けるようにする
+			os.confirm({
+				type: 'error',
+				title: i18n.ts.accountNotApproved,
+				text: i18n.ts.accountNotApprovedDescription,
+				okText: i18n.ts._signupCheck.title,
+				cancelText: i18n.ts.gotIt,
+			}).then(({ canceled }) => {
+				if (!canceled) os.pageWindow('/signup-check');
+			});
+			break;
+		}
 		case '22d05606-fbcf-421a-a2db-b32610dcfd1b': {
 			os.alert({
 				type: 'error',

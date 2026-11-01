@@ -105,6 +105,18 @@ function fetchAccount(token: string, id?: string, forceShowDialog?: boolean): Pr
 								text: i18n.ts.tokenRevokedDescription,
 							});
 						}
+					} else if (res.error.id === '3c25f403-6ed7-4b14-ba24-be9bb72a29e4') {
+						// misskey.art独自: YOUR_ACCOUNT_NOT_APPROVED
+						// 承認制の新規登録で、まだ承認されていない。アカウントは消えていないので、サインアウトさせずに知らせるだけにする
+						if (forceShowDialog || $i && (token === $i.token || id === $i.id)) {
+							await alert({
+								type: 'error',
+								title: i18n.ts.accountNotApproved,
+								text: i18n.ts.accountNotApprovedDescription,
+							});
+						}
+						fail(res.error);
+						return;
 					} else {
 						await alert({
 							type: 'error',
@@ -362,7 +374,7 @@ export function getAccountWithSigninDialog(): Promise<{ id: string, token: strin
 export function getAccountWithSignupDialog(): Promise<{ id: string, token: string } | null> {
 	return new Promise((resolve) => {
 		const { dispose } = popup(defineAsyncComponent(() => import('@/components/MkSignupDialog.vue')), {}, {
-			done: async (res: Misskey.entities.SignupResponse) => {
+			done: async (res: Misskey.entities.SignupSuccessResponse) => {
 				const user = JSON.parse(JSON.stringify(res));
 				delete user.token;
 				await addAccount(host, user, res.token);

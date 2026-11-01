@@ -24,6 +24,27 @@ SPDX-License-Identifier: AGPL-3.0-only
 					</MkSwitch>
 				</SearchMarker>
 
+				<!-- misskey.art独自: 承認制の新規登録 -->
+				<SearchMarker :keywords="['approval', 'signup', 'registration', 'invitation']">
+					<MkSwitch v-model="approvalRequiredForSignup" @change="onChange_approvalRequiredForSignup">
+						<template #label><SearchLabel>{{ i18n.ts._serverSettings.approvalRequiredForSignup }}</SearchLabel><span class="_art">ART</span></template>
+						<template #caption><SearchText>{{ i18n.ts._serverSettings.approvalRequiredForSignupCaption }}</SearchText></template>
+					</MkSwitch>
+				</SearchMarker>
+
+				<SearchMarker :keywords="['approval', 'signup', 'reason', 'required']">
+					<MkSwitch v-model="signupReasonRequired" :disabled="!approvalRequiredForSignup" @change="onChange_signupReasonRequired">
+						<template #label><SearchLabel>{{ i18n.ts._serverSettings.signupReasonRequired }}</SearchLabel><span class="_art">ART</span></template>
+						<template #caption><SearchText>{{ i18n.ts._serverSettings.signupReasonRequiredCaption }}</SearchText></template>
+					</MkSwitch>
+				</SearchMarker>
+
+				<SearchMarker :keywords="['approval', 'signup', 'reason', 'length']">
+					<MkInput :modelValue="signupReasonMaxLength" type="number" :min="1" :max="100000" :disabled="!approvalRequiredForSignup" manualSave @update:modelValue="save_signupReasonMaxLength">
+						<template #label><SearchLabel>{{ i18n.ts._serverSettings.signupReasonMaxLength }}</SearchLabel><span class="_art">ART</span></template>
+					</MkInput>
+				</SearchMarker>
+
 				<SearchMarker :keywords="['ugc', 'content', 'visibility', 'visitor', 'guest']">
 					<MkSelect v-model="ugcVisibilityForVisitor" :items="ugcVisibilityForVisitorDef" @update:modelValue="onChange_ugcVisibilityForVisitor">
 						<template #label><SearchLabel>{{ i18n.ts._serverSettings.userGeneratedContentsVisibilityForVisitor }}</SearchLabel></template>
@@ -200,6 +221,10 @@ const meta = await misskeyApi('admin/meta');
 
 const enableRegistration = ref(!meta.disableRegistration);
 const emailRequiredForSignup = ref(meta.emailRequiredForSignup);
+// misskey.art独自: 承認制の新規登録
+const approvalRequiredForSignup = ref(meta.approvalRequiredForSignup);
+const signupReasonRequired = ref(meta.signupReasonRequired);
+const signupReasonMaxLength = ref(meta.signupReasonMaxLength);
 const {
 	model: ugcVisibilityForVisitor,
 	def: ugcVisibilityForVisitorDef,
@@ -277,6 +302,39 @@ function onChange_emailRequiredForSignup(value: boolean) {
 	os.apiWithDialog('admin/update-meta', {
 		emailRequiredForSignup: value,
 	}).then(() => {
+		fetchInstance(true);
+	});
+}
+
+function onChange_approvalRequiredForSignup(value: boolean) {
+	os.apiWithDialog('admin/update-meta', {
+		approvalRequiredForSignup: value,
+	}).then(() => {
+		fetchInstance(true);
+	});
+}
+
+function onChange_signupReasonRequired(value: boolean) {
+	os.apiWithDialog('admin/update-meta', {
+		signupReasonRequired: value,
+	}).then(() => {
+		fetchInstance(true);
+	});
+}
+
+function save_signupReasonMaxLength(value: number) {
+	// 上限はadmin/update-metaのparamDefと合わせる
+	if (!Number.isInteger(value) || value < 1 || value > 100000) {
+		os.alert({
+			type: 'error',
+			text: i18n.ts.invalidValue,
+		});
+		return;
+	}
+	os.apiWithDialog('admin/update-meta', {
+		signupReasonMaxLength: value,
+	}).then(() => {
+		signupReasonMaxLength.value = value;
 		fetchInstance(true);
 	});
 }

@@ -13,7 +13,7 @@ import { MiUserPending, MiUserProfile } from '@/models/_.js';
 
 // misskey.art独自: 登録に使えるメールアドレスの制限(+タグ・Gmailのドット)と、確認のリンクを開いたときの再確認、フォロー承認の既定値
 describe('登録に使えるメールアドレスの制限', () => {
-	let admin: misskey.entities.SignupResponse;
+	let admin: misskey.entities.SignupSuccessResponse;
 
 	beforeAll(async () => {
 		admin = await signup({ username: 'admin' });
