@@ -2269,6 +2269,7 @@ _signup:
   approvalNotice: "このサーバーの新規登録は承認制です。申請したあと、運営が承認するまではログインできません。"
   invitationCodeOptional: "招待コードをお持ちの方は、入力すると審査なしで登録できます。"
   applicationTitle: "参加の申請"
+  applyToJoin: "参加を申請する"
   apply: "申請する"
   applicationReceived: "申請を受け付けました"
   pendingApproval: "運営の審査をお待ちください。審査の結果は、メールでもお知らせします。"

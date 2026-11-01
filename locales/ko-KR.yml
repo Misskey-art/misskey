@@ -2240,6 +2240,7 @@ _signup:
   approvalNotice: "이 서버의 회원 가입은 승인제입니다. 신청한 후 운영진이 승인할 때까지는 로그인할 수 없습니다."
   invitationCodeOptional: "초대 코드가 있으신 분은 입력하면 심사 없이 가입할 수 있습니다."
   applicationTitle: "가입 신청"
+  applyToJoin: "가입 신청하기"
   apply: "신청하기"
   applicationReceived: "신청이 접수되었습니다"
   pendingApproval: "운영진의 심사를 기다려 주세요. 심사 결과는 메일로도 알려 드립니다."

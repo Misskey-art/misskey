@@ -26,13 +26,14 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<MkInfo v-else-if="instance.federation === 'none'" warn>{{ i18n.ts.federationDisabled }}</MkInfo>
 			</div>
 			<div class="_gaps_s" :class="$style.mainActions">
-				<MkButton :class="$style.mainAction" full rounded gradate data-testid="signup" style="margin-right: 12px;" @click="signup()">{{ i18n.ts.joinThisServer }}</MkButton>
+				<!-- misskey.art独自: 承認制の新規登録がオンなら、登録のボタンを「参加を申請する」にする -->
+				<MkButton :class="$style.mainAction" full rounded gradate data-testid="signup" style="margin-right: 12px;" @click="signup()">{{ instance.approvalRequiredForSignup ? i18n.ts._signup.applyToJoin : i18n.ts.joinThisServer }}<span v-if="instance.approvalRequiredForSignup" class="_art" :class="$style.artOnGradate">ART</span></MkButton>
 				<MkButton :class="$style.mainAction" full rounded type="a" target="_blank" rel="noopener" href="https://misskey-hub.net/servers/">{{ i18n.ts.exploreOtherServers }}</MkButton>
 				<MkButton :class="$style.mainAction" full rounded data-testid="signin" @click="signin()">{{ i18n.ts.login }}</MkButton>
 			</div>
 			<!-- misskey.art独自: 申請した人が、審査状況を確かめられるようにする -->
 			<div v-if="instance.approvalRequiredForSignup" :class="$style.mainSignupCheck">
-				<MkButton :class="$style.mainAction" full rounded data-testid="signup-check" @click="openSignupCheck()">{{ i18n.ts._signupCheck.title }}</MkButton>
+				<MkButton :class="$style.mainAction" full rounded data-testid="signup-check" @click="openSignupCheck()">{{ i18n.ts._signupCheck.title }}<span class="_art">ART</span></MkButton>
 			</div>
 		</div>
 	</div>
@@ -181,6 +182,13 @@ function showMenu(ev: PointerEvent) {
 
 .mainAction {
 	line-height: 28px;
+}
+
+/* misskey.art独自: 色の付いたボタン(gradate)の上のARTバッジは、ボタンの文字の色で塗りつぶして、ボタンの色の字にする(ボタンの色によっては、紫の枠が見えにくいため) */
+.artOnGradate.artOnGradate {
+	color: var(--MI_THEME-accent);
+	background: var(--MI_THEME-fgOnAccent);
+	border-color: var(--MI_THEME-fgOnAccent);
 }
 
 .mainSignupCheck {

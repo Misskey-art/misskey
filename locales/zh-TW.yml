@@ -2220,6 +2220,7 @@ _signup:
   approvalNotice: "本伺服器的註冊需要核准。提交申請後，在營運方核准之前無法登入。"
   invitationCodeOptional: "如果您有邀請碼，輸入後即可無需審核完成註冊。"
   applicationTitle: "申請加入"
+  applyToJoin: "申請加入"
   apply: "申請"
   applicationReceived: "已收到您的申請"
   pendingApproval: "請等待營運方審核。審核結果也會透過電子郵件通知您。"

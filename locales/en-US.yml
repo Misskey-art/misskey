@@ -2220,6 +2220,7 @@ _signup:
   approvalNotice: "Sign-ups on this server require approval. After you apply, you can't sign in until the administrators approve your account."
   invitationCodeOptional: "If you have an invitation code, enter it to sign up without review."
   applicationTitle: "Apply to join"
+  applyToJoin: "Apply to join"
   apply: "Apply"
   applicationReceived: "Your application has been received"
   pendingApproval: "Please wait for the administrators to review your application. We'll also let you know the result by email."

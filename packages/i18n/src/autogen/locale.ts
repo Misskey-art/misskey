@@ -8737,6 +8737,10 @@ export interface Locale extends ILocale {
          */
         "applicationTitle": string;
         /**
+         * 参加を申請する
+         */
+        "applyToJoin": string;
+        /**
          * 申請する
          */
         "apply": string;

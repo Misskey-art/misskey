@@ -2240,6 +2240,7 @@ _signup:
   approvalNotice: "本服务器的注册需要批准。提交申请后，在运营方批准之前无法登录。"
   invitationCodeOptional: "如果您有邀请码，输入后即可无需审核完成注册。"
   applicationTitle: "申请加入"
+  applyToJoin: "申请加入"
   apply: "申请"
   applicationReceived: "已收到您的申请"
   pendingApproval: "请等待运营方审核。审核结果也会通过邮件通知您。"
