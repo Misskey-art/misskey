@@ -31,16 +31,16 @@ describe('Streaming', () => {
 
 	describe('Streaming', () => {
 		// Local users
-		let ayano: misskey.entities.SignupResponse;
-		let kyoko: misskey.entities.SignupResponse;
-		let chitose: misskey.entities.SignupResponse;
-		let kanako: misskey.entities.SignupResponse;
-		let erin: misskey.entities.SignupResponse;
+		let ayano: misskey.entities.SignupSuccessResponse;
+		let kyoko: misskey.entities.SignupSuccessResponse;
+		let chitose: misskey.entities.SignupSuccessResponse;
+		let kanako: misskey.entities.SignupSuccessResponse;
+		let erin: misskey.entities.SignupSuccessResponse;
 
 		// Remote users
-		let akari: misskey.entities.SignupResponse;
-		let chinatsu: misskey.entities.SignupResponse;
-		let takumi: misskey.entities.SignupResponse;
+		let akari: misskey.entities.SignupSuccessResponse;
+		let chinatsu: misskey.entities.SignupSuccessResponse;
+		let takumi: misskey.entities.SignupSuccessResponse;
 
 		let kyokoNote: misskey.entities.Note;
 		let kanakoNote: misskey.entities.Note;

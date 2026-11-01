@@ -212,6 +212,8 @@ export class ActivityPubServerService {
 		const user = await this.usersRepository.findOneBy({
 			id: userId,
 			host: IsNull(),
+			// misskey.art独自: 承認制の新規登録で、まだ承認されていないアカウントはいないものとして扱う
+			approved: true,
 		});
 
 		if (user == null) {
@@ -309,6 +311,8 @@ export class ActivityPubServerService {
 		const user = await this.usersRepository.findOneBy({
 			id: userId,
 			host: IsNull(),
+			// misskey.art独自: 承認制の新規登録で、まだ承認されていないアカウントはいないものとして扱う
+			approved: true,
 		});
 
 		if (user == null) {
@@ -395,6 +399,8 @@ export class ActivityPubServerService {
 		const user = await this.usersRepository.findOneBy({
 			id: userId,
 			host: IsNull(),
+			// misskey.art独自: 承認制の新規登録で、まだ承認されていないアカウントはいないものとして扱う
+			approved: true,
 		});
 
 		if (user == null) {
@@ -463,6 +469,8 @@ export class ActivityPubServerService {
 		const user = await this.usersRepository.findOneBy({
 			id: userId,
 			host: IsNull(),
+			// misskey.art独自: 承認制の新規登録で、まだ承認されていないアカウントはいないものとして扱う
+			approved: true,
 		});
 
 		if (user == null) {
@@ -745,6 +753,8 @@ export class ActivityPubServerService {
 			const user = await this.usersRepository.findOneBy({
 				id: userId,
 				host: IsNull(),
+				// misskey.art独自: 承認制の新規登録で、まだ承認されていないアカウントはいないものとして扱う
+				approved: true,
 			});
 
 			if (user == null) {
@@ -777,6 +787,8 @@ export class ActivityPubServerService {
 			const user = await this.usersRepository.findOneBy({
 				id: userId,
 				isSuspended: false,
+				// misskey.art独自: 承認制の新規登録で、まだ承認されていないアカウントはいないものとして扱う
+				approved: true,
 			});
 
 			return await this.userInfo(request, reply, user);
@@ -798,6 +810,8 @@ export class ActivityPubServerService {
 				usernameLower: acct.username.toLowerCase(),
 				host: acct.host ?? IsNull(),
 				isSuspended: false,
+				// misskey.art独自: 承認制の新規登録で、まだ承認されていないアカウントはいないものとして扱う
+				approved: true,
 			});
 
 			return await this.userInfo(request, reply, user);

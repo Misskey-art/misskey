@@ -4,7 +4,7 @@
  */
 
 import { describe, expect, test } from 'vitest';
-import { shouldRequireFollowApprovalByAccountAge } from '@/misc/should-require-follow-approval-by-account-age.js';
+import { applyFollowApprovalDefaults, shouldRequireFollowApprovalByAccountAge } from '@/misc/should-require-follow-approval-by-account-age.js';
 
 describe('アカウント作成後の期間によるフォロー承認の判定', () => {
 	const now = Date.UTC(2026, 0, 15);
@@ -34,5 +34,30 @@ describe('アカウント作成後の期間によるフォロー承認の判定'
 		const disabled = { followApprovalLocalSeconds: days, followApprovalRemoteSeconds: days };
 		expect(shouldRequireFollowApprovalByAccountAge(disabled, false, new Date(now), now)).toBe(false);
 		expect(shouldRequireFollowApprovalByAccountAge(disabled, true, new Date(now), now)).toBe(false);
+	});
+});
+
+describe('フォロー承認の期間の既定値(misskey.art独自)', () => {
+	const defaults = { followApprovalDefaultLocalSeconds: 86400, followApprovalDefaultRemoteSeconds: 7 * 86400 };
+
+	test('「既定値を使う」(null)だけを既定値で埋める', () => {
+		expect(applyFollowApprovalDefaults({ followApprovalLocalSeconds: null, followApprovalRemoteSeconds: null }, defaults)).toEqual({
+			followApprovalLocalSeconds: 86400,
+			followApprovalRemoteSeconds: 7 * 86400,
+		});
+	});
+
+	test('ユーザーが決めた値(無効の0を含む)はそのまま', () => {
+		expect(applyFollowApprovalDefaults({ followApprovalLocalSeconds: 0, followApprovalRemoteSeconds: 3600 }, defaults)).toEqual({
+			followApprovalLocalSeconds: 0,
+			followApprovalRemoteSeconds: 3600,
+		});
+	});
+
+	test('既定値が0(無効)なら、「既定値を使う」の人は承認制にならない', () => {
+		const now = Date.UTC(2026, 0, 15);
+		const profile = applyFollowApprovalDefaults({ followApprovalLocalSeconds: null, followApprovalRemoteSeconds: null }, { followApprovalDefaultLocalSeconds: 0, followApprovalDefaultRemoteSeconds: 0 });
+		expect(shouldRequireFollowApprovalByAccountAge(profile, false, new Date(now), now)).toBe(false);
+		expect(shouldRequireFollowApprovalByAccountAge(profile, true, new Date(now), now)).toBe(false);
 	});
 });

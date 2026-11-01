@@ -11,8 +11,8 @@ import { api, makeStreamCatcher, post, signup, uploadFile } from '../utils.js';
 import type * as misskey from 'misskey-js';
 
 describe('Drive', () => {
-	let alice: misskey.entities.SignupResponse;
-	let bob: misskey.entities.SignupResponse;
+	let alice: misskey.entities.SignupSuccessResponse;
+	let bob: misskey.entities.SignupSuccessResponse;
 
 	beforeAll(async () => {
 		alice = await signup({ username: 'alice' });

@@ -62,13 +62,16 @@ function submit() {
 	}).then(() => {
 		succeeded.value = true;
 		submitting.value = false;
-	}).catch(() => {
+	}).catch((err: { code?: string } | undefined) => {
 		submitting.value = false;
 
 		os.alert({
 			type: 'error',
 			title: i18n.ts.somethingHappened,
-			text: i18n.ts.emailVerificationFailedError,
+			// misskey.art独自: 確認する前に、同じ(別名を含む)アドレスがほかのアカウントで確認済みになった・このサーバーで使えなくなった
+			text: err?.code === 'EMAIL_ALREADY_USED' ? i18n.ts.emailAlreadyUsedByOtherAccount
+				: err?.code === 'UNAVAILABLE_EMAIL' ? i18n.ts.emailNotAllowedOnThisServer
+				: i18n.ts.emailVerificationFailedError,
 		});
 	});
 }

@@ -203,6 +203,10 @@ export const ROUTE_DEF = [{
 	path: '/signup-complete/:code',
 	component: page(() => import('@/pages/signup-complete.vue')),
 }, {
+	// misskey.art独自: 承認制の新規登録の審査状況を確かめるページ
+	path: '/signup-check',
+	component: page(() => import('@/pages/signup-check.vue')),
+}, {
 	path: '/verify-email/:code',
 	component: page(() => import('@/pages/verify-email.vue')),
 }, {
@@ -357,6 +361,11 @@ export const ROUTE_DEF = [{
 	path: '/custom-emojis-manager',
 	component: page(() => import('@/pages/custom-emojis-manager.vue')),
 }, {
+	// misskey.art独自: モデレーターでなくても、ロールポリシー(canApproveSignups)で新規登録を審査できる人のためのページ
+	path: '/signup-approvals-manager',
+	component: iAmModerator || $i?.policies.canApproveSignups ? page(() => import('@/pages/admin/signup-approvals.vue')) : page(() => import('@/pages/not-found.vue')),
+	loginRequired: true,
+}, {
 	path: '/avatar-decorations',
 	name: 'avatarDecorations',
 	component: page(() => import('@/pages/avatar-decorations.vue')),
@@ -454,6 +463,11 @@ export const ROUTE_DEF = [{
 		path: '/abuses',
 		name: 'abuses',
 		component: page(() => import('@/pages/admin/abuses.vue')),
+	}, {
+		// misskey.art独自
+		path: '/signup-approvals',
+		name: 'signup-approvals',
+		component: page(() => import('@/pages/admin/signup-approvals.vue')),
 	}, {
 		path: '/modlog',
 		name: 'modlog',

@@ -112,6 +112,8 @@ export class ApiServerService {
 				host?: string;
 				invitationCode?: string;
 				emailAddress?: string;
+				// misskey.art独自: 承認制の新規登録で、申請者が書いた登録の理由
+				reason?: string;
 				'hcaptcha-response'?: string;
 				'g-recaptcha-response'?: string;
 				'turnstile-response'?: string;

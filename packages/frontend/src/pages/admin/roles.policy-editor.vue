@@ -406,6 +406,16 @@ SPDX-License-Identifier: AGPL-3.0-only
 				</MkInput>
 			</template>
 		</XFolder>
+
+		<XFolder v-if="matchQuery([i18n.ts._role._options.canApproveSignups, 'canApproveSignups'])" v-model:policyMeta="policyMetaModel.canApproveSignups" :isBaseRole="isBaseRole" :readonly="readonly">
+			<template #label>{{ i18n.ts._role._options.canApproveSignups }}<span class="_art">ART</span></template>
+			<template #valueText>{{ valuesModel.canApproveSignups ? i18n.ts.yes : i18n.ts.no }}</template>
+			<template #default="{ disabled }">
+				<MkSwitch v-model="valuesModel.canApproveSignups" :disabled="disabled">
+					<template #label>{{ i18n.ts.enable }}</template>
+				</MkSwitch>
+			</template>
+		</XFolder>
 	</div>
 </template>
 

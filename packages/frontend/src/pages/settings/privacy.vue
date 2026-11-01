@@ -29,7 +29,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 							<MkDisableSection :disabled="isLocked">
 								<div class="_gaps_m">
 									<div v-for="setting in followApprovalSettings" :key="setting.key" class="_gaps_s">
-										<MkSelect v-model="setting.mode" :items="followApprovalModes" @update:modelValue="saveFollowApproval(setting)">
+										<MkSelect v-model="setting.mode" :items="followApprovalModesFor(setting.key)" @update:modelValue="saveFollowApproval(setting)">
 											<template #label><SearchLabel>{{ setting.label }}</SearchLabel></template>
 											<template #caption><SearchText>{{ setting.caption }}</SearchText></template>
 										</MkSelect>
@@ -296,11 +296,26 @@ const followApprovalSettings = ref<FollowApprovalSetting[]>([
 	},
 ]);
 
-const followApprovalModes = [
-	{ label: i18n.ts._followApproval.useDefault, value: 'default' },
-	{ label: i18n.ts.disabled, value: 'disabled' },
-	{ label: i18n.ts._followApproval.custom, value: 'custom' },
-];
+// misskey.art独自: 「既定値を使う」に、管理者が決めた今の既定値を出す
+function followApprovalModesFor(key: FollowApprovalSetting['key']) {
+	const seconds = key === 'followApprovalLocalSeconds' ? instance.followApprovalDefaultLocalSeconds : instance.followApprovalDefaultRemoteSeconds;
+	let label: string;
+	if (seconds == null || seconds === 0) {
+		label = i18n.ts._followApproval.useDefault;
+	} else {
+		const { amount, unit } = followApprovalPeriodFromSeconds(seconds);
+		// 1時間に満たない既定値でも「0時間」と出ないようにする
+		const n = Math.max(0.01, Math.round(amount * 100) / 100);
+		label = unit === 'day'
+			? i18n.tsx._followApproval.useDefaultDays({ n })
+			: i18n.tsx._followApproval.useDefaultHours({ n });
+	}
+	return [
+		{ label, value: 'default' },
+		{ label: i18n.ts.disabled, value: 'disabled' },
+		{ label: i18n.ts._followApproval.custom, value: 'custom' },
+	];
+}
 
 const followApprovalUnits = [
 	{ label: i18n.ts._time.hour, value: 'hour' },

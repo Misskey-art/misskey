@@ -102,7 +102,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			}
 
 			if (ps.email != null) {
-				const res = await this.emailService.validateEmailForAccount(ps.email);
+				// misskey.art独自: 別名(+タグ・Gmailのドット)の判定で、本人の今のアドレスを使用済みとみなさない
+				const res = await this.emailService.validateEmailForAccount(ps.email, me.id);
 				if (!res.available) {
 					throw new ApiError(meta.errors.unavailable);
 				}

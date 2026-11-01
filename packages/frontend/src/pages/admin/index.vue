@@ -14,6 +14,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 				<div class="_gaps_s">
 					<MkInfo v-if="thereIsUnresolvedAbuseReport" warn>{{ i18n.ts.thereIsUnresolvedAbuseReportWarning }} <MkA to="/admin/abuses" class="_link">{{ i18n.ts.check }}</MkA></MkInfo>
+					<MkInfo v-if="thereArePendingSignupApprovals" warn>{{ i18n.ts._signupApprovals.pendingWarning }} <MkA to="/admin/signup-approvals" class="_link">{{ i18n.ts.check }}</MkA></MkInfo>
 					<MkInfo v-if="noMaintainerInformation" warn>{{ i18n.ts.noMaintainerInformationWarning }} <MkA to="/admin/settings" class="_link">{{ i18n.ts.configure }}</MkA></MkInfo>
 					<MkInfo v-if="noInquiryUrl" warn>{{ i18n.ts.noInquiryUrlWarning }} <MkA to="/admin/settings" class="_link">{{ i18n.ts.configure }}</MkA></MkInfo>
 					<MkInfo v-if="noBotProtection" warn>{{ i18n.ts.noBotProtectionWarning }} <MkA to="/admin/security" class="_link">{{ i18n.ts.configure }}</MkA></MkInfo>
@@ -67,10 +68,13 @@ const view = ref(null);
 const el = ref<HTMLDivElement | null>(null);
 const pageProps = ref({});
 const noMaintainerInformation = computed(() => isEmpty(instance.maintainerName) || isEmpty(instance.maintainerEmail));
-const noBotProtection = computed(() => !instance.disableRegistration && !instance.enableHcaptcha && !instance.enableRecaptcha && !instance.enableTurnstile && !instance.enableMcaptcha);
+// misskey.art独自: 承認制の新規登録がオンなら、アカウントの作成をオープンにしていなくても誰でも申請できるので、そのときも警告する
+const noBotProtection = computed(() => (!instance.disableRegistration || instance.approvalRequiredForSignup) && !instance.enableHcaptcha && !instance.enableRecaptcha && !instance.enableTurnstile && !instance.enableMcaptcha);
 const noEmailServer = computed(() => !instance.enableEmail);
 const noInquiryUrl = computed(() => isEmpty(instance.inquiryUrl));
 const thereIsUnresolvedAbuseReport = ref(false);
+// misskey.art独自: 審査を待っている新規登録の申請があるか(知らせるのは、このバナーだけにしている)
+const thereArePendingSignupApprovals = ref(false);
 const currentPage = computed(() => router.currentRef.value.child);
 
 misskeyApi('admin/abuse-user-reports', {
@@ -78,6 +82,12 @@ misskeyApi('admin/abuse-user-reports', {
 	limit: 1,
 }).then(reports => {
 	if (reports.length > 0) thereIsUnresolvedAbuseReport.value = true;
+});
+
+misskeyApi('admin/signup-approvals/pending', {
+	limit: 1,
+}).then(signups => {
+	if (signups.length > 0) thereArePendingSignupApprovals.value = true;
 });
 
 const NARROW_THRESHOLD = 600;
@@ -171,6 +181,13 @@ const menuDef = computed<SuperMenuDef[]>(() => [{
 		text: i18n.ts.abuseReports,
 		to: '/admin/abuses',
 		active: currentPage.value?.route.name === 'abuses',
+	}, {
+		// misskey.art独自
+		icon: 'ti ti-user-question',
+		text: i18n.ts._signupApprovals.title,
+		to: '/admin/signup-approvals',
+		active: currentPage.value?.route.name === 'signup-approvals',
+		badge: true,
 	}, {
 		icon: 'ti ti-list-search',
 		text: i18n.ts.moderationLogs,

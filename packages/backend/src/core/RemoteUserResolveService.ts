@@ -45,7 +45,8 @@ export class RemoteUserResolveService {
 
 		if (host == null) {
 			this.logger.info(`return local user: ${usernameLower}`);
-			return await this.usersRepository.findOneBy({ usernameLower, host: IsNull() }).then(u => {
+			// misskey.art独自: 承認を待っているアカウントは、無いアカウントと同じに扱う(メンション・移行先・alsoKnownAs・インポートなどに使わせない)
+			return await this.usersRepository.findOneBy({ usernameLower, host: IsNull(), approved: true }).then(u => {
 				if (u == null) {
 					throw new Error('user not found');
 				} else {
@@ -58,7 +59,8 @@ export class RemoteUserResolveService {
 
 		if (host === this.utilityService.toPuny(this.config.host)) {
 			this.logger.info(`return local user: ${usernameLower}`);
-			return await this.usersRepository.findOneBy({ usernameLower, host: IsNull() }).then(u => {
+			// misskey.art独自: 承認を待っているアカウントは、無いアカウントと同じに扱う(メンション・移行先・alsoKnownAs・インポートなどに使わせない)
+			return await this.usersRepository.findOneBy({ usernameLower, host: IsNull(), approved: true }).then(u => {
 				if (u == null) {
 					throw new Error('user not found');
 				} else {

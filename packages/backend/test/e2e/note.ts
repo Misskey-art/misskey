@@ -17,10 +17,10 @@ import type * as misskey from 'misskey-js';
 describe('Note', () => {
 	let Notes: Repository<MiNote>;
 
-	let root: misskey.entities.SignupResponse;
-	let alice: misskey.entities.SignupResponse;
-	let bob: misskey.entities.SignupResponse;
-	let tom: misskey.entities.SignupResponse;
+	let root: misskey.entities.SignupSuccessResponse;
+	let alice: misskey.entities.SignupSuccessResponse;
+	let bob: misskey.entities.SignupSuccessResponse;
+	let tom: misskey.entities.SignupSuccessResponse;
 
 	beforeAll(async () => {
 		const connection = await initTestDb(true);

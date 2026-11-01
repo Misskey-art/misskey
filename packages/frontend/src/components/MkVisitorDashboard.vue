@@ -18,8 +18,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<!-- eslint-disable-next-line vue/no-v-html -->
 				<div v-html="instance.description || i18n.ts.headlineMisskey"></div>
 			</div>
-			<div v-if="instance.disableRegistration || instance.federation !== 'all'" :class="$style.mainWarn" class="_gaps_s">
-				<MkInfo v-if="instance.disableRegistration" warn>{{ i18n.ts.invitationRequiredToRegister }}</MkInfo>
+			<div v-if="instance.disableRegistration || instance.approvalRequiredForSignup || instance.federation !== 'all'" :class="$style.mainWarn" class="_gaps_s">
+				<!-- misskey.art独自: 承認制の新規登録がオンなら、招待コードが無くても申請できるので、招待制の案内の代わりに承認制の案内を出す -->
+				<MkInfo v-if="instance.disableRegistration && !instance.approvalRequiredForSignup" warn>{{ i18n.ts.invitationRequiredToRegister }}</MkInfo>
+				<MkInfo v-if="instance.approvalRequiredForSignup" warn>{{ i18n.ts._signup.approvalNotice }}</MkInfo>
 				<MkInfo v-if="instance.federation === 'specified'" warn>{{ i18n.ts.federationSpecified }}</MkInfo>
 				<MkInfo v-else-if="instance.federation === 'none'" warn>{{ i18n.ts.federationDisabled }}</MkInfo>
 			</div>
@@ -27,6 +29,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<MkButton :class="$style.mainAction" full rounded gradate data-testid="signup" style="margin-right: 12px;" @click="signup()">{{ i18n.ts.joinThisServer }}</MkButton>
 				<MkButton :class="$style.mainAction" full rounded type="a" target="_blank" rel="noopener" href="https://misskey-hub.net/servers/">{{ i18n.ts.exploreOtherServers }}</MkButton>
 				<MkButton :class="$style.mainAction" full rounded data-testid="signin" @click="signin()">{{ i18n.ts.login }}</MkButton>
+			</div>
+			<!-- misskey.art独自: 申請した人が、審査状況を確かめられるようにする -->
+			<div v-if="instance.approvalRequiredForSignup" :class="$style.mainSignupCheck">
+				<MkButton :class="$style.mainAction" full rounded data-testid="signup-check" @click="openSignupCheck()">{{ i18n.ts._signupCheck.title }}</MkButton>
 			</div>
 		</div>
 	</div>
@@ -53,7 +59,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue';
+import { ref, defineAsyncComponent } from 'vue';
 import * as Misskey from 'misskey-js';
 import { instanceName } from '@@/js/config.js';
 import type { MenuItem } from '@/types/menu.js';
@@ -90,6 +96,12 @@ function signup() {
 	const { dispose } = os.popup(XSignupDialog, {
 		autoSet: true,
 	}, {
+		closed: () => dispose(),
+	});
+}
+
+function openSignupCheck() {
+	const { dispose } = os.popup(defineAsyncComponent(() => import('@/components/MkSignupCheckPanel.vue')), {}, {
 		closed: () => dispose(),
 	});
 }
@@ -169,6 +181,10 @@ function showMenu(ev: PointerEvent) {
 
 .mainAction {
 	line-height: 28px;
+}
+
+.mainSignupCheck {
+	padding: 0 32px 32px 32px;
 }
 
 .stats {

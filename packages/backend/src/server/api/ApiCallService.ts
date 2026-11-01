@@ -415,6 +415,14 @@ export class ApiCallService implements OnApplicationShutdown {
 					kind: 'permission',
 					id: 'a8c724b3-6e9c-4b46-b1a8-bc3ed6258370',
 				});
+			} else if (!user!.approved) {
+				// misskey.art独自: 承認制の新規登録で、まだ承認されていないアカウントにはAPIを使わせない
+				throw new ApiError({
+					message: 'Your account is not yet approved.',
+					code: 'YOUR_ACCOUNT_NOT_APPROVED',
+					kind: 'permission',
+					id: '3c25f403-6ed7-4b14-ba24-be9bb72a29e4',
+				});
 			}
 		}
 
@@ -459,6 +467,21 @@ export class ApiCallService implements OnApplicationShutdown {
 					code: 'ROLE_PERMISSION_DENIED',
 					kind: 'permission',
 					id: '7f86f06f-7e15-4057-8561-f4b6d4ac755a',
+				});
+			}
+		}
+
+		// misskey.art独自: requiredRolePolicyと同じだが、モデレーター・管理者のロールを持つ人は常に許可する。
+		// モデレーターの作業を、ロールでモデレーター以外の人にも個別に任せられるようにするため(misskey-juiceから移植)
+		if (ep.meta.requiredRolePolicyOrModerator != null && (this.meta.rootUserId !== user!.id)) {
+			const myRoles = await this.roleService.getUserRoles(user!.id);
+			const policies = await this.roleService.getUserPolicies(user!.id);
+			if (!policies[ep.meta.requiredRolePolicyOrModerator] && !myRoles.some(r => r.isModerator || r.isAdministrator)) {
+				throw new ApiError({
+					message: 'You are not assigned to a required role.',
+					code: 'ROLE_PERMISSION_DENIED',
+					kind: 'permission',
+					id: '60ae1eea-4c46-4b88-9c4c-549867219a30',
 				});
 			}
 		}

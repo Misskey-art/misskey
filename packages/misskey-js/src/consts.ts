@@ -126,6 +126,10 @@ export const permissions = [
 	'read:admin:drive',
 	'write:admin:ad',
 	'read:admin:ad',
+	'read:admin:pending-signups',
+	'write:admin:approve-signup',
+	'write:admin:decline-signup',
+	'read:admin:signup-approval-history',
 	'write:invite-codes',
 	'read:invite-codes',
 	'write:clip-favorite',
@@ -190,6 +194,8 @@ export const moderationLogTypes = [
 	'deleteGalleryPost',
 	'deleteChatRoom',
 	'updateProxyAccountDescription',
+	'approveSignup',
+	'declineSignup',
 ] as const;
 
 export const rolePolicies = [
@@ -233,6 +239,7 @@ export const rolePolicies = [
 	'scheduledNoteLimit',
 	'watermarkAvailable',
 	'announcementReactionTypeLimit',
+	'canApproveSignups',
 ] as const;
 
 export const queueTypes = [
@@ -538,5 +545,16 @@ export type ModerationLogPayloads = {
 	updateProxyAccountDescription: {
 		before: string | null;
 		after: string | null;
-	}
+	};
+	approveSignup: {
+		userId: string;
+		userUsername: string;
+		userHost: string | null;
+	};
+	declineSignup: {
+		userId: string;
+		userUsername: string;
+		userHost: string | null;
+		reason: string;
+	};
 };

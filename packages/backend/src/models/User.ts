@@ -9,6 +9,9 @@ import { MiDriveFile } from './DriveFile.js';
 
 @Entity('user')
 @Index(['usernameLower', 'host'], { unique: true })
+// misskey.art独自: 承認を待つアカウントの一覧(admin/signup-approvals/pending)を、userの表を全部見ずに引くためのインデックス。
+// 承認を待つアカウントだけが入るので、ほぼ空のまま
+@Index('IDX_user_pending_approval', ['id'], { where: '"approved" = false AND "host" IS NULL' })
 export class MiUser {
 	@PrimaryColumn(id())
 	public id: string;
@@ -175,6 +178,21 @@ export class MiUser {
 		comment: 'Whether the User is locked.',
 	})
 	public isLocked: boolean;
+
+	// misskey.art独自: 承認制の新規登録で、まだモデレーターが承認していないアカウントはfalse。
+	// falseの間はサインインもAPIの利用もできない
+	@Column('boolean', {
+		default: true,
+		comment: 'Whether the User is approved (used when approval-required signup is enabled).',
+	})
+	public approved: boolean;
+
+	// misskey.art独自: 承認制の新規登録で、申請者が書いた登録の理由(モデレーターだけが見る)
+	@Column('text', {
+		nullable: true, select: false,
+		comment: 'The reason the User gave at signup, when approval-required signup was enabled. Moderator/admin only.',
+	})
+	public signupReason: string | null;
 
 	@Column('boolean', {
 		default: false,

@@ -208,6 +208,8 @@ export class UserSearchService {
 		}
 
 		userQuery.andWhere('user.isSuspended = FALSE');
+		// misskey.art独自: 承認制の新規登録で、まだ承認されていないアカウントは検索に出さない
+		userQuery.andWhere('user.approved = TRUE');
 
 		return userQuery;
 	}
@@ -243,7 +245,9 @@ export class UserSearchService {
 					.where('user.updatedAt IS NULL')
 					.orWhere('user.updatedAt > :activeThreshold', { activeThreshold: activeThreshold });
 			}))
-			.andWhere('user.isSuspended = FALSE');
+			.andWhere('user.isSuspended = FALSE')
+			// misskey.art独自: 承認制の新規登録で、まだ承認されていないアカウントは検索に出さない
+			.andWhere('user.approved = TRUE');
 
 		if (mutingQuery) {
 			nameQuery.andWhere(`user.id NOT IN (${mutingQuery.getQuery()})`);
@@ -286,6 +290,7 @@ export class UserSearchService {
 						.orWhere('user.updatedAt > :activeThreshold', { activeThreshold: activeThreshold });
 				}))
 				.andWhere('user.isSuspended = FALSE')
+				.andWhere('user.approved = TRUE')
 				.setParameters(profQuery.getParameters());
 
 			users = users.concat(await userQuery

@@ -171,6 +171,13 @@ export class SigninWithPasskeyApiService {
 			});
 		}
 
+		// misskey.art独自: 承認制の新規登録で、まだ承認されていないアカウントはサインインさせない(認証が済んだときだけ伝える)
+		if (!user.approved) {
+			return error(403, {
+				id: '9f2f084b-af33-4f06-93cf-8a7fe04c6786',
+			});
+		}
+
 		const signinResponse = this.signinService.signin(request, reply, user);
 		return {
 			signinResponse: signinResponse,

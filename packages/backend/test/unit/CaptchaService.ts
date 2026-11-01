@@ -198,6 +198,57 @@ describe('CaptchaService', () => {
 		});
 	});
 
+	// misskey.art独自: 新規登録・サインイン以外の、普通のエンドポイントからcaptchaを確かめるためのもの
+	describe('verifyRequestCaptcha', () => {
+		const originalNodeEnv = process.env.NODE_ENV;
+
+		beforeEach(() => {
+			// NODE_ENV==='test'による早期returnを無効化し、実際の検証ロジックを通す
+			process.env.NODE_ENV = 'production';
+		});
+
+		afterAll(() => {
+			process.env.NODE_ENV = originalNodeEnv;
+		});
+
+		test('NODE_ENV===testの場合は検証自体をスキップする', async () => {
+			process.env.NODE_ENV = 'test';
+			const meta = { enableTestcaptcha: true } as MiMeta;
+			// 誤った応答でも例外を投げなければスキップされている
+			await service.verifyRequestCaptcha(meta, { testcaptcha: 'wrong-answer' });
+		});
+
+		test('有効になっているプロバイダのみを検証する(無効なプロバイダの応答は無視される)', async () => {
+			const meta = {
+				enableHcaptcha: false,
+				hcaptchaSecretKey: 'hcaptcha-secret',
+				enableMcaptcha: false,
+				mcaptchaSecretKey: null,
+				mcaptchaSitekey: null,
+				mcaptchaInstanceUrl: null,
+				enableRecaptcha: false,
+				recaptchaSecretKey: null,
+				enableTurnstile: false,
+				turnstileSecretKey: null,
+				enableTestcaptcha: true,
+			} as MiMeta;
+
+			// hcaptchaは無効なので、誤った応答が入っていても無視されてtestcaptchaの正しい応答だけが検証される
+			await service.verifyRequestCaptcha(meta, { hcaptcha: 'wrong', testcaptcha: 'testcaptcha-passed' });
+		});
+
+		test('有効なプロバイダの検証に失敗した場合はCaptchaErrorをそのまま伝播する', async () => {
+			const meta = { enableTestcaptcha: true } as MiMeta;
+			await testCaptchaError(captchaErrorCodes.verificationFailed, () => service.verifyRequestCaptcha(meta, { testcaptcha: 'wrong-answer' }));
+		});
+
+		test('有効フラグが立っていてもsecretKeyが無ければ検証しない', async () => {
+			const meta = { enableHcaptcha: true, hcaptchaSecretKey: null } as MiMeta;
+			// secretKey未設定のため検証自体が走らず、応答が無くても例外にならない
+			await service.verifyRequestCaptcha(meta, {});
+		});
+	});
+
 	describe('get', () => {
 		function setupMeta(meta: Partial<MiMeta>) {
 			metaService.fetch.mockResolvedValue(meta as MiMeta);

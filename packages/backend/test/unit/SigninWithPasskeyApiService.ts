@@ -185,5 +185,16 @@ describe('SigninWithPasskeyApiService', () => {
 			expect(res.statusCode).toBe(403);
 			expect((res_body as any).error?.id).toStrictEqual('2d84773e-f7b7-4d0b-8f72-bb69b584c912');
 		});
+
+		// misskey.art独自: 承認制の新規登録で、まだ承認されていないアカウント
+		it('Should return 403 When The user is not approved yet', async () => {
+			const req = new DummyFastifyRequest({ context: dummyContext, credential: { dummy: [] } }) as ApiFastifyRequestType;
+			const res = new DummyFastifyReply() as FastifyReply;
+			const userId = await FakeWebauthnVerify();
+			await usersRepository.update({ id: userId }, { approved: false });
+			const res_body = await passkeyApiService.signin(req, res);
+			expect(res.statusCode).toBe(403);
+			expect((res_body as any).error?.id).toStrictEqual('9f2f084b-af33-4f06-93cf-8a7fe04c6786');
+		});
 	});
 });

@@ -23,7 +23,7 @@ import type * as misskey from 'misskey-js';
 import { describe, beforeAll, beforeEach, test } from 'vitest';
 
 describe('2要素認証', () => {
-	let alice: misskey.entities.SignupResponse;
+	let alice: misskey.entities.SignupSuccessResponse;
 
 	const config = loadConfig();
 	const password = 'test';

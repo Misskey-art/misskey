@@ -66,7 +66,9 @@ export class GetterService {
 	 */
 	@bindThis
 	public async getUser(userId: MiUser['id']) {
-		const user = await this.usersRepository.findOneBy({ id: userId });
+		// misskey.art独自: 承認制の新規登録で、まだ承認されていないアカウントはいないものとして扱う
+		// (フォロー・ブロック・ミュート・通報など、ほかの人がユーザーを指定するエンドポイントで使われる)
+		const user = await this.usersRepository.findOneBy({ id: userId, approved: true });
 
 		if (user == null) {
 			throw new IdentifiableError('15348ddd-432d-49c2-8a5a-8069753becff', 'No such user.');

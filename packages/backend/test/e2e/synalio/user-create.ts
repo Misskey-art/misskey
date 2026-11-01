@@ -20,7 +20,7 @@ import type { INestApplicationContext } from '@nestjs/common';
 
 describe('[シナリオ] ユーザ作成', () => {
 	let queue: INestApplicationContext;
-	let admin: entities.SignupResponse;
+	let admin: entities.SignupSuccessResponse;
 
 	async function createSystemWebhook(args?: Partial<entities.AdminSystemWebhookCreateRequest>, credential?: UserToken): Promise<entities.AdminSystemWebhookCreateResponse> {
 		const res = await api(

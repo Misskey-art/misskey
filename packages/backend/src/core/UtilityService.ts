@@ -48,6 +48,36 @@ export class UtilityService {
 		return regexp.test(email);
 	}
 
+	// misskey.art独自: Gmail/Googlemailはローカルパートのドットを無視する仕様のため、このドメインに限り
+	// ドットも正規化の対象にする(ほかのプロバイダはドットを別のアドレスとして扱うため対象外)。
+	// EmailService側がSQLでの重複チェックにも同じ一覧を使うため公開する
+	public readonly dotFoldingEmailDomains: readonly string[] = ['gmail.com', 'googlemail.com'];
+
+	/**
+	 * misskey.art独自: メールアドレスの別名(Gmailのドット無視・+タグ)を使った多重登録を防ぐため、重複チェック用に正規化する。
+	 * 保存・送信するメールアドレスはそのまま使い、同じ人とみなすための比較用のキーを作るだけに使う。
+	 * ドット無視と+タグ除去は誤検知のしやすさが違う(前者はGmailに限るので安全、後者はドメインに関係なく効く)ため、個別に指定する
+	 */
+	@bindThis
+	public normalizeEmailForDedup(email: string, options: { foldDots: boolean; stripPlusTag: boolean }): string {
+		const atIndex = email.lastIndexOf('@');
+		if (atIndex === -1) return email.toLowerCase();
+
+		let local = email.slice(0, atIndex);
+		const domain = email.slice(atIndex + 1).toLowerCase();
+
+		if (options.stripPlusTag) {
+			const plusIndex = local.indexOf('+');
+			if (plusIndex !== -1) local = local.slice(0, plusIndex);
+		}
+
+		if (options.foldDots && this.dotFoldingEmailDomains.includes(domain)) {
+			local = local.replace(/\./g, '');
+		}
+
+		return `${local.toLowerCase()}@${domain}`;
+	}
+
 	@bindThis
 	public isBlockedHost(blockedHosts: string[], host: string | null): boolean {
 		if (host == null) return false;

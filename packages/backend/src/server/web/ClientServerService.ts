@@ -457,6 +457,8 @@ export class ClientServerService {
 				host: host ?? IsNull(),
 				isSuspended: false,
 				requireSigninToViewContents: false,
+				// misskey.art独自: 承認制の新規登録で、まだ承認されていないアカウントはいないものとして扱う
+				approved: true,
 			});
 
 			if (user == null) return null;
@@ -521,6 +523,8 @@ export class ClientServerService {
 				usernameLower: username.toLowerCase(),
 				host: host ?? IsNull(),
 				isSuspended: false,
+				// misskey.art独自: 承認制の新規登録で、まだ承認されていないアカウントはいないものとして扱う
+				approved: true,
 			});
 
 			vary(reply.raw, 'Accept');
@@ -565,6 +569,8 @@ export class ClientServerService {
 				id: request.params.user,
 				host: IsNull(),
 				isSuspended: false,
+				// misskey.art独自: 承認制の新規登録で、まだ承認されていないアカウントはいないものとして扱う
+				approved: true,
 			});
 
 			if (user == null) {
@@ -804,6 +810,8 @@ export class ClientServerService {
 
 			const user = await this.usersRepository.findOneBy({
 				id: request.params.user,
+				// misskey.art独自: 承認制の新規登録で、まだ承認されていないアカウントはいないものとして扱う
+				approved: true,
 			});
 
 			if (user == null) return;

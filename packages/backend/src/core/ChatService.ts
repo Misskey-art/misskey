@@ -667,6 +667,9 @@ export class ChatService {
 
 		const room = await this.chatRoomsRepository.findOneByOrFail({ id: roomId, ownerId: inviterId });
 
+		// misskey.art独自: 承認を待っているアカウントは、無いアカウントと同じに扱う(招待も通知もしない)
+		await this.usersRepository.findOneByOrFail({ id: inviteeId, approved: true });
+
 		if (await this.isRoomMember(room, inviteeId)) {
 			throw new Error('already member');
 		}

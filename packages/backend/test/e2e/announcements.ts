@@ -11,7 +11,7 @@ import { api, castAsError, signup } from '../utils.js';
 import type * as misskey from 'misskey-js';
 
 describe('Announcements', () => {
-	let admin: misskey.entities.SignupResponse;
+	let admin: misskey.entities.SignupSuccessResponse;
 
 	beforeAll(async () => {
 		admin = await signup({ username: 'admin' });

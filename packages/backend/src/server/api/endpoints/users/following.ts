@@ -118,6 +118,11 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				throw new ApiError(meta.errors.noSuchUser);
 			}
 
+			// misskey.art独自: 承認を待っているアカウントは、モデレーター以外には無いアカウントと同じに見せる(users/showと同じ)
+			if (!user.approved && !await this.roleService.isModerator(me)) {
+				throw new ApiError(meta.errors.noSuchUser);
+			}
+
 			const profile = await this.userProfilesRepository.findOneByOrFail({ userId: user.id });
 
 			if (profile.followingVisibility !== 'public' && !await this.roleService.isModerator(me)) {

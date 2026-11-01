@@ -11,7 +11,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 	@close="onClose"
 	@closed="emit('closed')"
 >
-	<template #header>{{ i18n.ts.signup }}</template>
+	<template #header>{{ headerText }}</template>
 
 	<div style="overflow-x: clip;">
 		<Transition
@@ -25,7 +25,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<XServerRules @done="isAcceptedServerRule = true" @cancel="onClose"/>
 			</template>
 			<template v-else>
-				<XSignup :autoSet="autoSet" @signup="onSignup" @signupEmailPending="onSignupEmailPending"/>
+				<XSignup :autoSet="autoSet" @signup="onSignup" @signupEmailPending="onSignupEmailPending" @signupPendingApproval="onSignupPendingApproval"/>
 			</template>
 		</Transition>
 	</div>
@@ -33,12 +33,13 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts" setup>
-import { useTemplateRef, ref } from 'vue';
+import { useTemplateRef, ref, computed } from 'vue';
 import * as Misskey from 'misskey-js';
 import XSignup from '@/components/MkSignupDialog.form.vue';
 import XServerRules from '@/components/MkSignupDialog.rules.vue';
 import MkModalWindow from '@/components/MkModalWindow.vue';
 import { i18n } from '@/i18n.js';
+import { instance } from '@/instance.js';
 
 const props = withDefaults(defineProps<{
 	autoSet?: boolean;
@@ -47,12 +48,15 @@ const props = withDefaults(defineProps<{
 });
 
 const emit = defineEmits<{
-	(ev: 'done', res: Misskey.entities.SignupResponse): void;
+	(ev: 'done', res: Misskey.entities.SignupSuccessResponse): void;
 	(ev: 'cancelled'): void;
 	(ev: 'closed'): void;
 }>();
 
 const dialog = useTemplateRef('dialog');
+
+// misskey.art独自: 承認制の新規登録では、登録ではなく参加の申請になる
+const headerText = computed(() => instance.approvalRequiredForSignup ? i18n.ts._signup.applicationTitle : i18n.ts.signup);
 
 const isAcceptedServerRule = ref(false);
 
@@ -61,12 +65,18 @@ function onClose() {
 	dialog.value?.close();
 }
 
-function onSignup(res: Misskey.entities.SignupResponse) {
+function onSignup(res: Misskey.entities.SignupSuccessResponse) {
 	emit('done', res);
 	dialog.value?.close();
 }
 
 function onSignupEmailPending() {
+	dialog.value?.close();
+}
+
+// misskey.art独自: 承認を待つアカウントはまだ使えないので、アカウントの追加はしない(キャンセル扱い)
+function onSignupPendingApproval() {
+	emit('cancelled');
 	dialog.value?.close();
 }
 </script>

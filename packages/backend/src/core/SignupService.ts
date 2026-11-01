@@ -14,6 +14,7 @@ import { MiUserProfile } from '@/models/UserProfile.js';
 import { IdService } from '@/core/IdService.js';
 import { MiUserKeypair } from '@/models/UserKeypair.js';
 import { MiUsedUsername } from '@/models/UsedUsername.js';
+import { MiSignupApprovalCheck } from '@/models/SignupApprovalCheck.js';
 import { generateNativeUserToken } from '@/misc/token.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
 import { bindThis } from '@/decorators.js';
@@ -55,6 +56,13 @@ export class SignupService {
 		passwordHash?: MiUserProfile['password'] | null;
 		host?: string | null;
 		ignorePreservedUsernames?: boolean;
+		// misskey.art独自: 承認制の新規登録で、承認を待つアカウントにするときはfalse(省略したときは承認済み)
+		approved?: boolean;
+		// misskey.art独自: 承認制の新規登録で、申請者が書いた登録の理由
+		signupReason?: string | null;
+		// misskey.art独自: 承認を待つアカウントの、審査の結果を確かめるためのコード。アカウントと同じトランザクションで記録する
+		// (別々に書くと、間で失敗したときに、コードの無い承認待ちのアカウントが残るため)
+		approvalCheckCode?: string;
 	}) {
 		const { username, password, passwordHash, host } = opts;
 		let hash = passwordHash;
@@ -143,6 +151,8 @@ export class SignupService {
 				usernameLower: username.toLowerCase(),
 				host: this.utilityService.toPunyNullable(host),
 				token: secret,
+				approved: opts.approved ?? true,
+				signupReason: opts.signupReason ?? null,
 			}));
 
 			await transactionalEntityManager.save(new MiUserKeypair({
@@ -161,10 +171,26 @@ export class SignupService {
 				createdAt: new Date(),
 				username: username.toLowerCase(),
 			}));
+
+			// misskey.art独自: usernameとsignupReasonは、却下でuserの行が消えた後も履歴に出せるよう、写しを残しておく
+			if (opts.approvalCheckCode != null) {
+				await transactionalEntityManager.insert(MiSignupApprovalCheck, {
+					id: this.idService.gen(),
+					code: opts.approvalCheckCode,
+					userId: account.id,
+					status: 'pending',
+					username: account.username,
+					signupReason: opts.signupReason ?? null,
+				});
+			}
 		});
 
-		this.usersChart.update(account, true);
-		this.userService.notifySystemWebhook(account, 'userCreated');
+		// misskey.art独自: 承認を待つアカウントは、承認されたとき(admin/signup-approvals/approve)に、ユーザーの統計に数えてWebhookを送る。
+		// 申請の時点で数えると、却下した申請まで「新しいユーザー」として数えられ、届いてしまうため
+		if (account.approved) {
+			this.usersChart.update(account, true);
+			this.userService.notifySystemWebhook(account, 'userCreated');
+		}
 
 		if (this.meta.rootUserId == null) {
 			await this.metaService.update({ rootUserId: account.id });

@@ -131,6 +131,7 @@ export type SignupRequest = {
 	host?: string;
 	invitationCode?: string;
 	emailAddress?: string;
+	reason?: string;
 	'hcaptcha-response'?: string | null;
 	'g-recaptcha-response'?: string | null;
 	'turnstile-response'?: string | null;
@@ -138,9 +139,16 @@ export type SignupRequest = {
 	'testcaptcha-response'?: string | null;
 };
 
-export type SignupResponse = MeDetailed & {
+export type SignupSuccessResponse = MeDetailed & {
 	token: string;
 };
+
+export type SignupPendingApprovalResponse = {
+	pendingApproval: true;
+	checkCode: string;
+};
+
+export type SignupResponse = SignupSuccessResponse | SignupPendingApprovalResponse;
 
 export type SignupPendingRequest = {
 	code: string;
@@ -149,7 +157,7 @@ export type SignupPendingRequest = {
 export type SignupPendingResponse = {
 	id: User['id'],
 	i: string,
-};
+} | SignupPendingApprovalResponse;
 
 export type SigninFlowRequest = {
 	username: string;
