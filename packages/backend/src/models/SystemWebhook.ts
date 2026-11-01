@@ -18,6 +18,9 @@ export const systemWebhookEventTypes = [
 	'inactiveModeratorsWarning',
 	// モデレータが一定期間不在のためシステムにより招待制へと変更された
 	'inactiveModeratorsInvitationOnlyChanged',
+	// misskey.art独自: 承認制の新規登録で、申請が届いた(承認を待つアカウントができた)とき
+	// (名前とペイロードは、misskey-juiceのものと同じにしている)
+	'signupApplicationCreated',
 ] as const;
 export type SystemWebhookEventType = typeof systemWebhookEventTypes[number];
 

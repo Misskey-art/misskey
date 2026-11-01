@@ -3022,6 +3022,7 @@ _webhookSettings:
     userCreated: "使用者被新增時"
     inactiveModeratorsWarning: "當審查員在一段時間內沒有活動時"
     inactiveModeratorsInvitationOnlyChanged: "當審查員在一段時間內不活動時，系統會將模式變更為邀請制"
+    signupApplicationCreated: "收到註冊申請時"
   deleteConfirm: "請問是否要刪除 Webhook？"
   testRemarks: "按下切換開關右側的按鈕，就會將假資料發送至 Webhook。"
 _abuseReport:

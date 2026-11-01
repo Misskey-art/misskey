@@ -3042,6 +3042,7 @@ _webhookSettings:
     userCreated: "当用户被创建时"
     inactiveModeratorsWarning: "当管理员在一段时间内不活跃时"
     inactiveModeratorsInvitationOnlyChanged: "当因为管理员在一段时间内不活跃，导致服务器变为邀请制时"
+    signupApplicationCreated: "收到注册申请时"
   deleteConfirm: "要删除 webhook 吗？"
   testRemarks: "点击开关右侧的按钮，可以发送使用假数据的测试 Webhook。"
 _abuseReport:

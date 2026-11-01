@@ -5,7 +5,7 @@
 
 import { setTimeout } from 'node:timers/promises';
 import { entities } from 'misskey-js';
-import { beforeEach, describe, test, beforeAll, afterAll, expect } from 'vitest';
+import { afterEach, beforeEach, describe, test, beforeAll, afterAll, expect } from 'vitest';
 import {
 	api,
 	captureWebhook,
@@ -125,6 +125,80 @@ describe('[シナリオ] ユーザ作成', () => {
 
 			expect(webhookBody).toBe('timeout');
 			expect(alice.id).not.toBeNull();
+		});
+
+		// misskey.art独自: 承認制の新規登録
+		describe('承認制の新規登録がオンのとき', () => {
+			beforeEach(async () => {
+				await api('admin/update-meta', { approvalRequiredForSignup: true }, admin);
+			});
+
+			afterEach(async () => {
+				await api('admin/update-meta', { approvalRequiredForSignup: false }, admin);
+			});
+
+			const apply = async (username: string, reason: string) => {
+				const res = await api('signup', { username, password: 'test', reason });
+				expect(res.status).toBe(200);
+				expect((res.body as entities.SignupPendingApprovalResponse).pendingApproval).toBe(true);
+			};
+
+			test('申請 -> signupApplicationCreatedが、申請した人と理由を付けて送出される(確認コードは含まない)', async () => {
+				const webhook = await createSystemWebhook({
+					on: ['signupApplicationCreated'],
+					isActive: true,
+				});
+
+				const username = randomString();
+				const webhookBody = await captureWebhook(async () => {
+					await apply(username, 'よろしくお願いします');
+				});
+
+				expect(webhookBody.hookId).toBe(webhook.id);
+				expect(webhookBody.type).toBe('signupApplicationCreated');
+				const body = webhookBody.body as { applicant: entities.UserLite; reason: string | null };
+				expect(Object.keys(body).sort()).toEqual(['applicant', 'reason']);
+				expect(body.applicant.username).toBe(username);
+				expect(body.applicant.host).toBeNull();
+				expect(body.reason).toBe('よろしくお願いします');
+			});
+
+			test('申請 -> userCreatedは送出されず、承認したときに送出される', async () => {
+				await createSystemWebhook({
+					on: ['userCreated'],
+					isActive: true,
+				});
+
+				const username = randomString();
+				const onApply = await captureWebhook(async () => {
+					await apply(username, 'よろしくお願いします');
+				}).catch(e => e.message);
+				expect(onApply).toBe('timeout');
+
+				const pending = await api('admin/signup-approvals/pending', { limit: 100 }, admin);
+				const user = pending.body.find(u => u.username === username);
+				expect(user).toBeDefined();
+
+				const onApprove = await captureWebhook(async () => {
+					const res = await api('admin/signup-approvals/approve', { userId: user!.id }, admin);
+					expect(res.status).toBe(204);
+				});
+				expect(onApprove.type).toBe('userCreated');
+				expect((onApprove.body as entities.UserLite).id).toBe(user!.id);
+			});
+
+			test('申請 -> signupApplicationCreatedが未許可の場合は送出されない', async () => {
+				await createSystemWebhook({
+					on: [],
+					isActive: true,
+				});
+
+				const webhookBody = await captureWebhook(async () => {
+					await apply(randomString(), 'よろしくお願いします');
+				}).catch(e => e.message);
+
+				expect(webhookBody).toBe('timeout');
+			});
 		});
 	});
 });

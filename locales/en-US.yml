@@ -3022,6 +3022,7 @@ _webhookSettings:
     userCreated: "When user is created"
     inactiveModeratorsWarning: "When moderators have been inactive for a while"
     inactiveModeratorsInvitationOnlyChanged: "When a moderator has been inactive for a while, and the server is changed to invitation-only"
+    signupApplicationCreated: "When a sign-up application is received"
   deleteConfirm: "Are you sure you want to delete the Webhook?"
   testRemarks: "Click the button to the right of the switch to send a test Webhook with dummy data."
 _abuseReport:

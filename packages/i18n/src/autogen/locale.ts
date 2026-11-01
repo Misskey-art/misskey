@@ -11805,6 +11805,10 @@ export interface Locale extends ILocale {
              * モデレーターが一定期間非アクティブだったため、システムにより招待制へと変更されたとき
              */
             "inactiveModeratorsInvitationOnlyChanged": string;
+            /**
+             * 新規登録の申請が届いたとき
+             */
+            "signupApplicationCreated": string;
         };
         /**
          * Webhookを削除しますか？

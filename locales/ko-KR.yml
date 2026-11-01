@@ -3042,6 +3042,7 @@ _webhookSettings:
     userCreated: "유저가 생성되었을 때"
     inactiveModeratorsWarning: "모더레이터가 일정 기간동안 활동하지 않은 경우"
     inactiveModeratorsInvitationOnlyChanged: "모더레이터가 일정 기간 활동하지 않아 시스템에 의해 초대제로 바뀐 경우"
+    signupApplicationCreated: "가입 신청이 들어왔을 때"
   deleteConfirm: "Webhook을 삭제할까요?"
   testRemarks: "스위치 오른쪽에 있는 버튼을 클릭하여 더미 데이터를 사용한 테스트용 웹 훅을 보낼 수 있습니다."
 _abuseReport:
