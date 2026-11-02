@@ -41,11 +41,19 @@ export type InactiveModeratorsWarningPayload = {
 	remainingTime: ModeratorInactivityRemainingTime;
 };
 
+// misskey.art独自: 承認制の新規登録で、申請が届いたときのWebhookのペイロード。
+// 審査の結果を確かめるためのコード(checkCode)は、申請した本人だけが知っているべきものなので含めない
+export type SignupApplicationCreatedPayload = {
+	applicant: Packed<'UserLite'>;
+	reason: string | null;
+};
+
 export type SystemWebhookPayload<T extends SystemWebhookEventType> =
 	T extends 'abuseReport' | 'abuseReportResolved' ? AbuseReportPayload :
 	T extends 'userCreated' ? Packed<'UserLite'> :
 	T extends 'inactiveModeratorsWarning' ? InactiveModeratorsWarningPayload :
 	T extends 'inactiveModeratorsInvitationOnlyChanged' ? Record<string, never> :
+	T extends 'signupApplicationCreated' ? SignupApplicationCreatedPayload :
 		never;
 
 @Injectable()

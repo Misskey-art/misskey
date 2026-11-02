@@ -328,6 +328,14 @@ export class WebhookTestService {
 				send('inactiveModeratorsInvitationOnlyChanged', {});
 				break;
 			}
+			// misskey.art独自
+			case 'signupApplicationCreated': {
+				send('signupApplicationCreated', {
+					applicant: await this.toPackedUserLite(dummyUser1),
+					reason: 'This is a dummy signup application reason for testing purposes.',
+				});
+				break;
+			}
 			default: {
 				const _exhaustiveAssertion: never = params.type;
 				return;

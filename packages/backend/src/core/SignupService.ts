@@ -190,6 +190,10 @@ export class SignupService {
 		if (account.approved) {
 			this.usersChart.update(account, true);
 			this.userService.notifySystemWebhook(account, 'userCreated');
+		} else {
+			// misskey.art独自: 審査する人が気づけるよう、申請が届いたことをWebhookで知らせる。
+			// 送れなくても、申請そのものは受け付けたままにする
+			this.userService.notifySignupApplicationWebhook(account, opts.signupReason ?? null).catch(() => {});
 		}
 
 		if (this.meta.rootUserId == null) {
