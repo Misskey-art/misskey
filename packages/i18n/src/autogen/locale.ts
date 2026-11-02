@@ -4385,8 +4385,8 @@ export interface Locale extends ILocale {
      */
     "disableFederationOk": string;
     /**
-     * R18など、NSFWに相当する内容を投稿する場合は、注釈に投稿の内容に関する簡単な説明を記述してください。
-     * 詳しくはルールをご覧ください。https://service.misskey.art
+     * NSFWに当たるファイルは、区分に応じて「閲覧注意(センシティブ)」や「内容を隠す」を設定してください。「内容を隠す」を使うときは、注釈に注意書き(NSFW、R-18など)を、本文にファイルの概要と属性を書いてください。
+     * 詳しくはルールをご覧ください。https://service.misskey.art/rules
      */
     "contentWarningCheckRule": string;
     /**
@@ -8737,6 +8737,10 @@ export interface Locale extends ILocale {
          */
         "applicationTitle": string;
         /**
+         * 参加を申請する
+         */
+        "applyToJoin": string;
+        /**
          * 申請する
          */
         "apply": string;
@@ -11801,6 +11805,10 @@ export interface Locale extends ILocale {
              * モデレーターが一定期間非アクティブだったため、システムにより招待制へと変更されたとき
              */
             "inactiveModeratorsInvitationOnlyChanged": string;
+            /**
+             * 新規登録の申請が届いたとき
+             */
+            "signupApplicationCreated": string;
         };
         /**
          * Webhookを削除しますか？

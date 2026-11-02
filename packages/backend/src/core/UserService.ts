@@ -65,4 +65,13 @@ export class UserService {
 		const packedUser = await this.userEntityService.pack(user, null, { schema: 'UserLite' });
 		return this.systemWebhookService.enqueueSystemWebhook(type, packedUser);
 	}
+
+	/**
+	 * misskey.art独自: 承認制の新規登録で、申請が届いた(承認を待つアカウントができた)ことを、SystemWebhookで知らせる
+	 */
+	@bindThis
+	public async notifySignupApplicationWebhook(user: MiUser, reason: string | null) {
+		const applicant = await this.userEntityService.pack(user, null, { schema: 'UserLite' });
+		return this.systemWebhookService.enqueueSystemWebhook('signupApplicationCreated', { applicant, reason });
+	}
 }
