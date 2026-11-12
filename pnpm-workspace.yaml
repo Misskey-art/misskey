@@ -53,13 +53,15 @@ minimumReleaseAgeExclude:
   - slacc-linux-x64-musl
   - slacc-win32-arm64-msvc
   - slacc-win32-x64-msvc
+  - '@nestjs/common@12.4.2'
+  - '@nestjs/core@12.4.2'
+  - '@nestjs/testing@12.4.2'
 overrides:
   '@aiscript-dev/aiscript-languageserver': '-'
   chokidar: 5.0.0
   lodash: 4.18.1
   undici@^7: 7.30.1
   undici@^6: 6.29.1
-  undici@^8: 8.12.2
   fast-uri@^3: 3.1.9
   fast-uri@^4: 4.2.3
   ip-address@^9: 10.7.4
