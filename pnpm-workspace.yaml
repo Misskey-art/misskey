@@ -67,7 +67,7 @@ overrides:
   ip-address@^9: 10.7.4
   uuid@^9: 11.1.1
   uuid@^11: 11.1.1
-  '@misskey-dev/summaly>fastify': 5.12.6
+  '@misskey-dev/summaly>fastify': 5.12.8
   '@tabler/icons-webfont>sharp': '-'
 engineStrict: true
 saveExact: true

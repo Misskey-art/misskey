@@ -7,7 +7,6 @@ import RE2 from 're2';
 import * as mfm from 'mfm-js';
 import { Inject, Injectable } from '@nestjs/common';
 import ms from 'ms';
-import * as htmlParser from 'node-html-parser';
 import { extractCustomEmojisFromMfm } from '@/misc/extract-custom-emojis-from-mfm.js';
 import { extractHashtags } from '@/misc/extract-hashtags.js';
 import * as Acct from '@/misc/acct.js';
@@ -34,6 +33,7 @@ import type { Config } from '@/config.js';
 import { AvatarDecorationService } from '@/core/AvatarDecorationService.js';
 import { notificationRecieveConfig } from '@/models/json-schema/user.js';
 import { FOLLOW_APPROVAL_MAX_SECONDS } from '@/misc/should-require-follow-approval-by-account-age.js';
+import { parseUntrustedHtml } from '@/misc/parse-untrusted-html.js';
 import { ApiLoggerService } from '../../ApiLoggerService.js';
 import { ApiError } from '../../error.js';
 
@@ -587,7 +587,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		try {
 			const html = await this.httpRequestService.getHtml(url);
 
-			const doc = htmlParser.parse(html);
+			const doc = parseUntrustedHtml(html);
 
 			const myLink = `${this.config.url}/@${user.username}`;
 
